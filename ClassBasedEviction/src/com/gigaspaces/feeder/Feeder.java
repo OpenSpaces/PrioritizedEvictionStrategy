@@ -24,7 +24,7 @@ public class Feeder {
 			gigaSpace.write(new GoldMedal());
 		}
 		Assert.assertNull("BronzeMedal was not evicted", gigaSpace.read(new BronzeMedal()));
-		System.out.println("[Test Passed]");
+		System.out.println("Test Passed!!");
 	}
 
 
