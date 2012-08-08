@@ -57,8 +57,8 @@ public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStr
 
 
 	public void remove(EvictableServerEntry entry){
-		getPriorities().get(getPriority(entry)).remove(entry.getEvictionPayLoad());
-
+		if(getPriorities().get(getPriority(entry)).remove(entry.getEvictionPayLoad()) == null)
+			throw new RuntimeException("entry " + entry + "should be in the map");
 		//keep track of number of objects in space
 		getAmountInSpace().decrementAndGet();
 	}

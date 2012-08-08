@@ -32,7 +32,8 @@ public class ClassSpecificEvictionFIFOAdaptor extends ClassSpecificEvictionStrat
 	
 	@Override
 	public void remove(EvictableServerEntry entry){
-		getQueue().remove(entry.getEvictionPayLoad());
+		if(getQueue().remove(entry.getEvictionPayLoad()) == null)
+			throw new RuntimeException("entry " + entry + "should be in the queue");
 	}
 	
 	@Override

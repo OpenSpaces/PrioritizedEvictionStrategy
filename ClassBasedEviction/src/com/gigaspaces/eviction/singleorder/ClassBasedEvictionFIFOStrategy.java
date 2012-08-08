@@ -41,8 +41,8 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 
 
 	public void remove(EvictableServerEntry entry){
-		getPriorities().get(getPriority(entry)).remove(entry.getEvictionPayLoad());
-
+		if(getPriorities().get(getPriority(entry)).remove(entry.getEvictionPayLoad()) == null)
+			throw new RuntimeException("entry " + entry + "should be in the queue");
 		//keep track of number of objects in space
 		getAmountInSpace().decrementAndGet();
 	}

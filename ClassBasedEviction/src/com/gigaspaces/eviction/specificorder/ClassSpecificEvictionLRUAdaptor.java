@@ -46,7 +46,8 @@ public class ClassSpecificEvictionLRUAdaptor extends ClassSpecificEvictionStrate
 
 	@Override
 	public void remove(EvictableServerEntry entry){
-		getMapping().remove(entry.getEvictionPayLoad());
+		if(getMapping().remove(entry.getEvictionPayLoad()) == null)
+			throw new RuntimeException("entry " + entry + "should be in the map");
 	}
 
 	@Override
