@@ -5,18 +5,31 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import com.gigaspaces.eviction.AbstractClassBasedEvictionStrategy;
-import com.gigaspaces.eviction.singleorder.Priority;
+import com.gigaspaces.eviction.OrderBy;
+import com.gigaspaces.eviction.Priority;
+import com.gigaspaces.eviction.SpaceEvictionPriority;
 import com.gigaspaces.server.eviction.EvictableServerEntry;
+import com.gigaspaces.server.eviction.EvictionStrategy;
 import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
-
+/**
+ * This class enables a class specific eviction mechanism
+ * this means eviction is first by the priority indicated by the class,
+ * if there are several classes with the same priority classes will be picked by
+ * the hash code number of their class object.
+ * After a class was picked for eviction the eviction strategy to be used is according
+ * to what has been indicated in the classes' {@link SpaceEvictionPriority} {@link OrderBy} property 
+ * 
+ * @author Sagi Bernstein
+ * @since 9.1.0
+ */
 public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStrategy{
 	public static final int MAX_THREADS = 100;
-	ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, ClassSpecificEvictionNoneStrategy>> priorities;
+	ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, EvictionStrategy>> priorities;
 
 	public void init(SpaceCacheInteractor spaceCacheInteractor, Properties spaceProperties){
 		super.init(spaceCacheInteractor, spaceProperties);
-		priorities = new ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, ClassSpecificEvictionNoneStrategy>>();
+		priorities = new ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, EvictionStrategy>>();
 	}
 
 	public void onInsert(EvictableServerEntry entry)
@@ -25,7 +38,7 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 		Priority priority = getPriority(entry);
 
 		//handle class is first inserted to space
-		getPriorities().putIfAbsent(priority, new ConcurrentHashMap<Integer, ClassSpecificEvictionNoneStrategy>());
+		getPriorities().putIfAbsent(priority, new ConcurrentHashMap<Integer, EvictionStrategy>());
 
 		if(!getPriorities().get(priority).containsKey(classHash)){
 			if(!getPriorities().get(priority).containsKey(classHash)){
@@ -48,7 +61,7 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 		}
 	}
 
-	protected ClassSpecificEvictionNoneStrategy getSpecificStrategy(EvictableServerEntry entry) {
+	protected EvictionStrategy getSpecificStrategy(EvictableServerEntry entry) {
 		return getPriorities().get(getPriority(entry)).get(getEntryClassHash(entry));
 	}
 
@@ -72,12 +85,12 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 	public int  evict (int evictionQuota){ 
 		int counter = 0;
 
-		for(ConcurrentHashMap<Integer, ClassSpecificEvictionNoneStrategy> priorityLevel : getPriorities().values()){
+		for(ConcurrentHashMap<Integer, EvictionStrategy> priorityLevel : getPriorities().values()){
 			if(counter == evictionQuota)
 				break;
 			if(priorityLevel.isEmpty())
 				continue;
-			for (ClassSpecificEvictionNoneStrategy strategy : priorityLevel.values()) {
+			for (EvictionStrategy strategy : priorityLevel.values()) {
 				counter += strategy.evict(evictionQuota - counter);
 				if(counter == evictionQuota)
 					break;
@@ -87,7 +100,7 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 	}
 
 
-	public ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, ClassSpecificEvictionNoneStrategy>> getPriorities() {
+	public ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, EvictionStrategy>> getPriorities() {
 		return priorities;
 	}
 

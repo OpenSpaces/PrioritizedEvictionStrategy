@@ -8,7 +8,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for setting the eviction priority of a class 
+ * Annotation for setting the eviction priority of a class
+ * and optionally the strategy to use for eviction of that class' objects 
  * 
  * @author Sagi Bernstein
  * @since 9.1.0

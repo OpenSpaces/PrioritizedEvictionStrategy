@@ -2,7 +2,13 @@ package com.gigaspaces.eviction;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-
+/**
+ * this class is used to produce {@link IndexValue} objects
+ * to help map LRU
+ * 
+ * @author Sagi Bernstein
+ * @since 9.1.0
+ */
 public class Index{
 	private long major;
 	private AtomicLong minor;

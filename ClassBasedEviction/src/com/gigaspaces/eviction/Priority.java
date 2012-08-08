@@ -1,5 +1,12 @@
-package com.gigaspaces.eviction.singleorder;
+package com.gigaspaces.eviction;
 
+/**
+ * A thin wrapper for the {@link Integer} class that reverses
+ * Integer's natural order, as priority with lower value is more important
+ * 
+ * @author Sagi Bernstein
+ * @since 9.1.0
+ */
 public class Priority implements Comparable<Priority> {
 	Integer priority;
 	

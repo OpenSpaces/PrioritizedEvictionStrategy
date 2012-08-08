@@ -8,22 +8,23 @@ public class Medal {
 	Integer id;
 	String winnerName;
 	double diameter;
+	Object weight;
 	String sport;
 	String contest;
 	
 	public Medal(){}
 	
-	public Medal(int id){
+	public Medal(Integer id){
 		this.id = id;
 	}
 
 	@SpaceId
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 

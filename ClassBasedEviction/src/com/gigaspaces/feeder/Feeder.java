@@ -39,7 +39,7 @@ public class Feeder {
 		gigaSpace.clear(new Object());
 		
 		logger.info("test 2 - assert only gold remains");
-		for (int i = 0; i < cacheSize * 10; i++) {
+		for (int i = 0; i < (cacheSize * 10) + 1; i++) {
 			if(i % 2 == 0)
 				gigaSpace.write(new GoldMedal(i));
 			else
@@ -49,6 +49,17 @@ public class Feeder {
 				gigaSpace.count(new Object()) == cacheSize);
 		Assert.assertTrue("not all objects in space are of the highest priority",
 				gigaSpace.count(new Object()) == gigaSpace.count(new GoldMedal()));
+
+		logger.info("Test Passed 2");
+
+		gigaSpace.clear(new Object());
+		
+		logger.info("test 3 - multi threaded");
+		
+		logger.info("test 4 - out of memory");
+		
+		
+		
 	}
 
 

@@ -5,9 +5,18 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import com.gigaspaces.eviction.Index;
 import com.gigaspaces.eviction.IndexValue;
 import com.gigaspaces.server.eviction.EvictableServerEntry;
+import com.gigaspaces.server.eviction.EvictionStrategy;
 import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
-public class ClassSpecificEvictionLRUStrategy extends ClassSpecificEvictionNoneStrategy {
+/**
+ * This is an extension of the {@link EvictionStrategy} class
+ * it provides a class specific LRU mechanism
+ * to be used with {@link ClassSpecificEvictionStrategy} 
+ * 
+ * @author Sagi Bernstein
+ * @since 9.1.0
+ */
+public class ClassSpecificEvictionLRUStrategy extends EvictionStrategy {
 	private SpaceCacheInteractor spaceCacheInteractor;
 	private ConcurrentSkipListMap<IndexValue, EvictableServerEntry> mapping;
 	private Index index;

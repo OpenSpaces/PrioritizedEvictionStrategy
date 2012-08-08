@@ -3,11 +3,17 @@ package com.gigaspaces.eviction;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.gigaspaces.eviction.singleorder.Priority;
 import com.gigaspaces.server.eviction.EvictableServerEntry;
 import com.gigaspaces.server.eviction.EvictionStrategy;
 import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
+/**
+ * this class contains some useful methods that are common
+ * for different the strategies
+ * 
+ * @author Sagi Bernstein
+ * @since 9.1.0
+ */
 public abstract class AbstractClassBasedEvictionStrategy extends EvictionStrategy {
 
 	private SpaceCacheInteractor spaceCacheInteractor;

@@ -6,10 +6,18 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import com.gigaspaces.eviction.AbstractClassBasedEvictionStrategy;
 import com.gigaspaces.eviction.Index;
 import com.gigaspaces.eviction.IndexValue;
+import com.gigaspaces.eviction.Priority;
 import com.gigaspaces.server.eviction.EvictableServerEntry;
 import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
 
+/**
+ * This strategy evicts objects from the space, first according to the priority
+ * as indicated in the object's class and then by LRU of all objects with the indicated priority
+ * 
+ * @author Sagi Bernstein
+ * @since 9.1.0
+ */
 public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStrategy {
 	ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<IndexValue, EvictableServerEntry>> priorities;
 	Index index;
@@ -24,6 +32,7 @@ public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStr
 		//keep track of number of objects in space
 		getAmountInSpace().incrementAndGet();
 
+		//handle new priority value in space
 		getPriorities().putIfAbsent(getPriority(entry), new ConcurrentSkipListMap<IndexValue, EvictableServerEntry>());
 
 		IndexValue key = getIndex().incrementAndGet();

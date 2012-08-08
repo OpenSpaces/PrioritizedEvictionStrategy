@@ -4,10 +4,18 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.gigaspaces.server.eviction.EvictableServerEntry;
+import com.gigaspaces.server.eviction.EvictionStrategy;
 import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
-
-public class ClassSpecificEvictionFIFOStrategy extends ClassSpecificEvictionNoneStrategy {
+/**
+ * This is an extension of the {@link EvictionStrategy} class
+ * it provides a class specific FIFO mechanism
+ * to be used with {@link ClassSpecificEvictionStrategy} 
+ * 
+ * @author Sagi Bernstein
+ * @since 9.1.0
+ */
+public class ClassSpecificEvictionFIFOStrategy extends EvictionStrategy {
 	private SpaceCacheInteractor spaceCacheInteractor;
 	private ConcurrentSkipListMap<Long, EvictableServerEntry> queue;
 	private AtomicLong index; 

@@ -5,10 +5,17 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.gigaspaces.eviction.AbstractClassBasedEvictionStrategy;
+import com.gigaspaces.eviction.Priority;
 import com.gigaspaces.server.eviction.EvictableServerEntry;
 import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
-
+/**
+ * This strategy evicts objects from the space, first according to the priority
+ * as indicated in the object's class and then by FIFO of all objects with the indicated priority
+ * 
+ * @author Sagi Bernstein
+ * @since 9.1.0
+ */
 public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionStrategy {
 	private ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<Long, EvictableServerEntry>> priorities;
 	private AtomicLong index; 

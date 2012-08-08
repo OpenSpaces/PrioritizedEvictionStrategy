@@ -1,15 +1,15 @@
 package com.gigaspaces.eviction.specificorder;
 
-import com.gigaspaces.server.eviction.EvictableServerEntry;
+import com.gigaspaces.server.eviction.EvictionStrategy;
 
-
-public class ClassSpecificEvictionNoneStrategy{
-	public void onInsert(EvictableServerEntry entry){ }
-	public void onLoad(EvictableServerEntry entry){ }
-	public void touchOnRead(EvictableServerEntry entry){}
-	public void touchOnModify(EvictableServerEntry entry){}
-	public void remove(EvictableServerEntry entry){}
-	public int  evict (int evictionQuota){ return 0;}
-	public void close(){}
+/**
+ * This is an empty extension of the {@link EvictionStrategy} class
+ * it is solely to make it possible to instantiate an empty implementation
+ * this is needed in {@link ClassSpecificEvictionStrategy} to provide the none strategy
+ * 
+ * @author Sagi Bernstein
+ * @since 9.1.0
+ */
+public class ClassSpecificEvictionNoneStrategy extends EvictionStrategy{
 
 }

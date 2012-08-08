@@ -30,7 +30,7 @@
            <props>
 			<prop key="space-config.engine.cache_policy">2</prop>
 			<prop key="space-config.engine.eviction_strategy">com.gigaspaces.eviction.singleorder.ClassBasedEvictionLRUStrategy</prop>
-		    <prop key="space-config.engine.cache_size">100</prop>
+		    <prop key="space-config.engine.cache_size">1000</prop>
 	       </props>
       	</os-core:properties>
     </os-core:space>
@@ -42,7 +42,7 @@
         <!-- The Feeder bean, writes objects to space -->
 
         <bean id="Feeder" class="com.gigaspaces.feeder.Feeder" depends-on="gigaSpace" >
-        <property name="cacheSize"><value>100</value></property>
+        <property name="cacheSize"><value>1000</value></property>
         </bean>
         
 </beans>

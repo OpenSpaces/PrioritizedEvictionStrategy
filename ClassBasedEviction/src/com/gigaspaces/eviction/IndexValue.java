@@ -1,5 +1,13 @@
 package com.gigaspaces.eviction;
 
+/**
+ * Specifies the value of index to be used for LRU mapping
+ * since the index is updated on each operation it is necessary
+ * to use two longs since 64 bit of a single one could not be enough
+ * 
+ * @author Sagi Bernstein
+ * @since 9.1.0
+ */
 public class IndexValue implements Comparable<IndexValue>{
 	private long major;
 	private long minor;
