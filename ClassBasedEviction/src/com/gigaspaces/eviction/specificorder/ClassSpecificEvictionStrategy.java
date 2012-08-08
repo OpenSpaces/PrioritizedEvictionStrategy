@@ -71,10 +71,15 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 
 	public int  evict (int evictionQuota){ 
 		int counter = 0;
-		//priority with a lower value should be removed later
-		while(counter < evictionQuota) {
-				for(ClassSpecificEvictionStrategyAdaptor adaptor : getPriorities().firstEntry().getValue().values())
-					counter += adaptor.evict(evictionQuota - counter);
+
+		for(ConcurrentHashMap<Integer, ClassSpecificEvictionStrategyAdaptor> classMap : getPriorities().values()){
+			for (ClassSpecificEvictionStrategyAdaptor adaptor : classMap.values()) {
+				counter += adaptor.evict(evictionQuota - counter);
+				if(counter >= evictionQuota)
+					break;
+			}
+			if(counter >= evictionQuota)
+				break;
 		}
 		return counter;
 	}

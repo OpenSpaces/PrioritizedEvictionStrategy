@@ -53,7 +53,8 @@ ClassSpecificEvictionStrategyAdaptor {
 	@Override
 	public int  evict (int evictionQuota){ 
 		int counter = 0;
-		for(int i = 0; i < Math.min(getMapping().size(), evictionQuota) 
+		int mappingsSize = getMapping().size();
+		for(int i = 0; i < Math.min(mappingsSize, evictionQuota) 
 				&& counter < evictionQuota; i++)
 			if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
 					getMapping().pollFirstEntry().getValue()))
