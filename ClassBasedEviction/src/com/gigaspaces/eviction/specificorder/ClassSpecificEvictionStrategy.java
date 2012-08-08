@@ -1,57 +1,48 @@
 package com.gigaspaces.eviction.specificorder;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import com.gigaspaces.eviction.AbstractClassBasedEvictionStrategy;
+import com.gigaspaces.eviction.singleorder.Priority;
 import com.gigaspaces.server.eviction.EvictableServerEntry;
 import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
 
 public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStrategy{
-	List<ConcurrentHashMap<Integer, ClassSpecificEvictionStrategyAdaptor>> priorities;
-	Semaphore classes;
-	Semaphore remove;
+	public static final int MAX_THREADS = 100;
+	ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, ClassSpecificEvictionStrategyAdaptor>> priorities;
 
 	public void init(SpaceCacheInteractor spaceCacheInteractor, Properties spaceProperties){
 		super.init(spaceCacheInteractor, spaceProperties);
-		priorities = new ArrayList<ConcurrentHashMap<Integer, ClassSpecificEvictionStrategyAdaptor>>();
-		classes = new Semaphore(1);
-		remove = new Semaphore(1);
-		for(int i = 0; i < PRIORITIES_SIZE; i++)
-			getPriorities().add(new ConcurrentHashMap<Integer, ClassSpecificEvictionStrategyAdaptor>());
+		priorities = new ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, ClassSpecificEvictionStrategyAdaptor>>();
 	}
 
 	public void onInsert(EvictableServerEntry entry)
 	{
 		int classHash = getEntryClassHash(entry);
-		int priority = getPriority(entry);
+		Priority priority = getPriority(entry);
 
 		//handle class is first inserted to space
-		if(!getPriorities().get(priority).containsKey(classHash)){
-			classes.acquireUninterruptibly();
+		getPriorities().putIfAbsent(priority, new ConcurrentHashMap<Integer, ClassSpecificEvictionStrategyAdaptor>());
 
+		if(!getPriorities().get(priority).containsKey(classHash)){
 			if(!getPriorities().get(priority).containsKey(classHash)){
 				switch(getOrderBy(entry)){
 				case FIFO:
-					getPriorities().get(priority).put(
-							classHash, new ClassSpecificEvictionFIFOAdaptor());
+					getPriorities().get(priority).putIfAbsent(
+							classHash, new ClassSpecificEvictionFIFOAdaptor(getSpaceCacheInteractor()));
 					break;
 				case LRU:
-					getPriorities().get(priority).put(
-							classHash, new ClassSpecificEvictionLRUAdaptor());
+					getPriorities().get(priority).putIfAbsent(
+							classHash, new ClassSpecificEvictionLRUAdaptor(getSpaceCacheInteractor()));
 					break;
 				case NONE:
-					getPriorities().get(priority).put(
+					getPriorities().get(priority).putIfAbsent(
 							classHash, new ClassSpecificEvictionStrategyAdaptor());
 				}
-				getPriorities().get(priority).get(classHash)
-				.init(getSpaceCacheInteractor(), getSpaceProperties());
 			}
-			classes.release();
 
 			getSpecificStrategy(entry).onInsert(entry);
 		}
@@ -81,17 +72,15 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 	public int  evict (int evictionQuota){ 
 		int counter = 0;
 		//priority with a lower value should be removed later
-		for(int i = getPriorities().size() - 1; i >= 0  && (counter < evictionQuota); i--) {
-			ClassSpecificEvictionStrategyAdaptor[] adaptors = new ClassSpecificEvictionStrategyAdaptor[getPriorities().get(i).size()];
-			getPriorities().get(i).values().toArray(adaptors);
-			for(int j = 0; j < adaptors.length && (counter < evictionQuota); i++)
-				counter += adaptors[j].evict(evictionQuota - counter);
+		while(counter < evictionQuota) {
+				for(ClassSpecificEvictionStrategyAdaptor adaptor : getPriorities().firstEntry().getValue().values())
+					counter += adaptor.evict(evictionQuota - counter);
 		}
 		return counter;
 	}
 
 
-	public List<ConcurrentHashMap<Integer, ClassSpecificEvictionStrategyAdaptor>> getPriorities() {
+	public ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, ClassSpecificEvictionStrategyAdaptor>> getPriorities() {
 		return priorities;
 	}
 

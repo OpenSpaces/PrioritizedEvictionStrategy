@@ -1,7 +1,5 @@
 package com.gigaspaces.eviction.singleorder;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -12,14 +10,11 @@ import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
 
 public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionStrategy {
-	private List<ConcurrentSkipListMap<Long, EvictableServerEntry>> priorities;
+	private ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<Long, EvictableServerEntry>> priorities;
 	private AtomicLong index; 
 
 	public void init(SpaceCacheInteractor spaceCacheInteractor, Properties spaceProperties){
-		priorities = new ArrayList<ConcurrentSkipListMap<Long, EvictableServerEntry>>();
-		for (int i = 0; i < PRIORITIES_SIZE; i++) {
-			priorities.add(new ConcurrentSkipListMap<Long, EvictableServerEntry>());
-		}
+		priorities = new ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<Long, EvictableServerEntry>>();
 		index = new AtomicLong(0);
 	}
 
@@ -28,6 +23,8 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 		getAmountInSpace().incrementAndGet();
 
 		Long key = getIndex().incrementAndGet();
+		getPriorities().putIfAbsent(getPriority(entry),
+				new ConcurrentSkipListMap<Long, EvictableServerEntry>());
 		getPriorities().get(getPriority(entry)).put(key, entry);
 		entry.setEvictionPayLoad(key);
 
@@ -55,18 +52,16 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 		int counter = 0;
 
 		//priority with a lower value should be removed later
-		for(int i = getPriorities().size() - 1; i >= 0  && (counter < evictionQuota); i--) {
 			while(counter < evictionQuota)
 				if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-						getPriorities().get(i).pollFirstEntry().getValue()))
+						getPriorities().pollFirstEntry().getValue().pollFirstEntry().getValue()))
 					counter++;
-		}	
 		return counter;
 
 	}
 
 
-	List<ConcurrentSkipListMap<Long, EvictableServerEntry>> getPriorities() {
+	ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<Long, EvictableServerEntry>> getPriorities() {
 		return priorities;
 	}
 

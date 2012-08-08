@@ -1,7 +1,5 @@
 package com.gigaspaces.eviction.singleorder;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -12,22 +10,20 @@ import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
 
 public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStrategy {
-	List<ConcurrentSkipListMap<Long, EvictableServerEntry>> priorities;
+	ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<Long, EvictableServerEntry>> priorities;
 	AtomicLong index;
 
 	public void init(SpaceCacheInteractor spaceCacheInteractor, Properties spaceProperties){
 		super.init(spaceCacheInteractor, spaceProperties);
 		this.index = new AtomicLong(0);
-		priorities = new ArrayList<ConcurrentSkipListMap<Long, EvictableServerEntry>>();
-		for (int i = 0; i < PRIORITIES_SIZE; i++) {
-			priorities.add(new ConcurrentSkipListMap<Long, EvictableServerEntry>());
-		}
+		priorities = new ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<Long, EvictableServerEntry>>();
 	}
 
 	public void onInsert(EvictableServerEntry entry){
 		//keep track of number of objects in space
 		getAmountInSpace().incrementAndGet();
-
+		
+		getPriorities().putIfAbsent(getPriority(entry), new ConcurrentSkipListMap<Long, EvictableServerEntry>());
 		put(entry);
 
 		//explicitly evict when there are more objects in space the the cache size
@@ -63,9 +59,9 @@ public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStr
 	public int evict(int evictionQuota){ 
 		int counter = 0;
 		//priority with a lower value should be removed later
-		for(int i = getPriorities().size() - 1; i >= 0  && (counter < evictionQuota); i--) {
+		while(counter < evictionQuota) {
 			if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-					getPriorities().get(i).pollFirstEntry().getValue()))
+					getPriorities().pollFirstEntry().getValue().pollFirstEntry().getValue()))
 				counter++;
 		}
 		return counter;
@@ -75,6 +71,7 @@ public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStr
 	public void close(){}
 
 	protected void put(EvictableServerEntry entry) {
+		//TODO update logics for insert and touches
 		Long key = getIndex().incrementAndGet();
 		getPriorities().get(getPriority(entry)).remove(entry.getEvictionPayLoad(), entry);
 		entry.setEvictionPayLoad(key);
@@ -85,7 +82,7 @@ public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStr
 		return index;
 	}
 
-	public List<ConcurrentSkipListMap<Long, EvictableServerEntry>> getPriorities() {
+	public ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<Long, EvictableServerEntry>> getPriorities() {
 		return priorities;
 	}
 
