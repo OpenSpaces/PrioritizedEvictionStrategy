@@ -7,8 +7,7 @@ import com.gigaspaces.eviction.IndexValue;
 import com.gigaspaces.server.eviction.EvictableServerEntry;
 import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
-public class ClassSpecificEvictionLRUAdaptor extends
-ClassSpecificEvictionStrategyAdaptor {
+public class ClassSpecificEvictionLRUAdaptor extends ClassSpecificEvictionStrategyAdaptor {
 	private SpaceCacheInteractor spaceCacheInteractor;
 	private ConcurrentSkipListMap<IndexValue, EvictableServerEntry> mapping;
 	private Index index;
