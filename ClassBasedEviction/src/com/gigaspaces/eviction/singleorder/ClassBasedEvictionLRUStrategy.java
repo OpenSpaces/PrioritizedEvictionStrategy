@@ -67,11 +67,14 @@ public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStr
 	public int evict(int evictionQuota){ 
 		int counter = 0;
 
-		while(counter < evictionQuota) {
-			if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-					getPriorities().firstEntry().getValue().firstEntry().getValue()))
-				counter++;
-		}
+			for(ConcurrentSkipListMap<IndexValue, EvictableServerEntry> map : getPriorities().values())
+				if(counter == evictionQuota)
+					break;
+				else if(map.isEmpty())
+					continue;
+				else if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
+						map.firstEntry().getValue()))
+						counter++;
 		return counter;
 	}
 

@@ -51,13 +51,16 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 	public int evict(int evictionQuota){ 
 		int counter = 0;
 
-		//priority with a lower value should be removed later
-			while(counter < evictionQuota)
-				if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-						getPriorities().firstEntry().getValue().firstEntry().getValue()))
-					counter++;
+		for(ConcurrentSkipListMap<Long, EvictableServerEntry> queue : getPriorities().values()){
+			if(counter == evictionQuota)
+				break;
+			if(queue.isEmpty())
+				continue;
+			if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
+					getPriorities().firstEntry().getValue().firstEntry().getValue()))
+				counter++;
+		}
 		return counter;
-
 	}
 
 

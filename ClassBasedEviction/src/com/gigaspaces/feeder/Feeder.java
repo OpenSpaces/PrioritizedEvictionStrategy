@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gigaspaces.data.BronzeMedal;
 import com.gigaspaces.data.GoldMedal;
+import com.gigaspaces.data.SilverMedal;
 
 public class Feeder {
 	@Autowired
@@ -24,12 +25,30 @@ public class Feeder {
 	@PostConstruct
 	public void startFeeding()  {
 		logger.info("Feeder started");
-		gigaSpace.write(new BronzeMedal());
-		for (int i = 0; i < cacheSize; i++) {
-			gigaSpace.write(new GoldMedal());
+		
+		
+		logger.info("test 1 - assert lru order");
+		gigaSpace.write(new BronzeMedal(0));
+		for (int i = 1; i < cacheSize; i++) {
+			gigaSpace.write(new GoldMedal(i));
 		}
-		Assert.assertNull("BronzeMedal was not evicted", gigaSpace.read(new BronzeMedal()));
-		logger.info("Test Passed!!");
+		gigaSpace.write(new BronzeMedal(100));
+		Assert.assertNull("BronzeMedal 0 was not evicted", gigaSpace.read(new BronzeMedal(0)));
+		logger.info("Test Passed 1");
+		
+		gigaSpace.clear(new Object());
+		
+		logger.info("test 2 - assert only gold remains");
+		for (int i = 0; i < cacheSize * 10; i++) {
+			if(i % 2 == 0)
+				gigaSpace.write(new GoldMedal(i));
+			else
+				gigaSpace.write(new SilverMedal(i));
+		}
+		Assert.assertTrue("amount of objects in space is larger then cache size",
+				gigaSpace.count(new Object()) == cacheSize);
+		Assert.assertTrue("not all objects in space are of the highest priority",
+				gigaSpace.count(new Object()) == gigaSpace.count(new GoldMedal()));
 	}
 
 

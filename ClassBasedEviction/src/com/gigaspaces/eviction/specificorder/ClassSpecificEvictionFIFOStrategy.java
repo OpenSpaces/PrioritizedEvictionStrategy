@@ -7,12 +7,12 @@ import com.gigaspaces.server.eviction.EvictableServerEntry;
 import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
 
-public class ClassSpecificEvictionFIFOAdaptor extends ClassSpecificEvictionStrategyAdaptor {
+public class ClassSpecificEvictionFIFOStrategy extends ClassSpecificEvictionNoneStrategy {
 	private SpaceCacheInteractor spaceCacheInteractor;
 	private ConcurrentSkipListMap<Long, EvictableServerEntry> queue;
 	private AtomicLong index; 
 	
-	public ClassSpecificEvictionFIFOAdaptor(SpaceCacheInteractor spaceCacheInteractor) {
+	public ClassSpecificEvictionFIFOStrategy(SpaceCacheInteractor spaceCacheInteractor) {
 		this.spaceCacheInteractor = spaceCacheInteractor;
 		this.queue= new  ConcurrentSkipListMap<Long, EvictableServerEntry>();
 		this.index = new AtomicLong(0);
