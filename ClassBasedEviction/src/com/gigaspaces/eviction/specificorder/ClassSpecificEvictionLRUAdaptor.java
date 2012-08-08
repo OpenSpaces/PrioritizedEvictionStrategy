@@ -57,7 +57,7 @@ public class ClassSpecificEvictionLRUAdaptor extends ClassSpecificEvictionStrate
 		for(int i = 0; i < Math.min(mappingsSize, evictionQuota) 
 				&& counter < evictionQuota; i++)
 			if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-					getMapping().pollFirstEntry().getValue()))
+					getMapping().firstEntry().getValue()))
 				counter++;
 		return counter;
 	}

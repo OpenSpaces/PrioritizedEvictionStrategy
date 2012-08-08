@@ -54,7 +54,7 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 		//priority with a lower value should be removed later
 			while(counter < evictionQuota)
 				if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-						getPriorities().pollFirstEntry().getValue().pollFirstEntry().getValue()))
+						getPriorities().firstEntry().getValue().firstEntry().getValue()))
 					counter++;
 		return counter;
 

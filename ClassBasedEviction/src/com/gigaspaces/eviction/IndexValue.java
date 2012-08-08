@@ -31,4 +31,9 @@ public class IndexValue implements Comparable<IndexValue>{
 		return (int) ((ans == 0)? this.getMinor() - o.getMinor() : ans);
 	}
 
+	@Override
+	public String toString() {
+		return "IndexValue [major=" + major + ", minor=" + minor + "]";
+	}
+
 }

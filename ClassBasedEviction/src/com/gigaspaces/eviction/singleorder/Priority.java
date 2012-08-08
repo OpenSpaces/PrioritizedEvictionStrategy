@@ -19,6 +19,10 @@ public class Priority implements Comparable<Priority> {
 	public int compareTo(Priority o) {
 		return o.getPriority() - this.getPriority();
 	}
-	
+
+	@Override
+	public String toString() {
+		return "Priority [priority=" + priority + "]";
+	}
 	
 }

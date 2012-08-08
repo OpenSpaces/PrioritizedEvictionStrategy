@@ -69,7 +69,7 @@ public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStr
 
 		while(counter < evictionQuota) {
 			if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-					getPriorities().pollFirstEntry().getValue().pollFirstEntry().getValue()))
+					getPriorities().firstEntry().getValue().firstEntry().getValue()))
 				counter++;
 		}
 		return counter;
