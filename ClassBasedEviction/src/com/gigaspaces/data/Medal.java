@@ -1,16 +1,31 @@
 package com.gigaspaces.data;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
+import com.gigaspaces.annotation.pojo.SpaceId;
 
 @SpaceClass
 public class Medal {
+	Integer id;
 	String winnerName;
 	double diameter;
 	String sport;
 	String contest;
 	
-	
 	public Medal(){}
+	
+	public Medal(int id){
+		this.id = id;
+	}
+
+	@SpaceId
+	public int getId() {
+		return id;
+	}
+
+
+	public void setId(int id) {
+		this.id = id;
+	}
 
 
 	public String getWinnerName() {
