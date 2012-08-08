@@ -3,7 +3,8 @@ package com.gigaspaces.eviction.singleorder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.gigaspaces.eviction.AbstractClassBasedEvictionStrategy;
 import com.gigaspaces.server.eviction.EvictableServerEntry;
@@ -11,20 +12,24 @@ import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
 
 public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionStrategy {
-	private List<ConcurrentLinkedQueue<EvictableServerEntry>> priorities;
+	private List<ConcurrentSkipListMap<Long, EvictableServerEntry>> priorities;
+	private AtomicLong index; 
 
 	public void init(SpaceCacheInteractor spaceCacheInteractor, Properties spaceProperties){
-		priorities = new ArrayList<ConcurrentLinkedQueue<EvictableServerEntry>>();
+		priorities = new ArrayList<ConcurrentSkipListMap<Long, EvictableServerEntry>>();
 		for (int i = 0; i < PRIORITIES_SIZE; i++) {
-			priorities.add(new ConcurrentLinkedQueue<EvictableServerEntry>());
+			priorities.add(new ConcurrentSkipListMap<Long, EvictableServerEntry>());
 		}
+		index = new AtomicLong(0);
 	}
 
 	public void onInsert(EvictableServerEntry entry){
 		//keep track of number of objects in space
 		getAmountInSpace().incrementAndGet();
 
-		getPriorities().get(getPriority(entry)).add(entry);
+		Long key = getIndex().incrementAndGet();
+		getPriorities().get(getPriority(entry)).put(key, entry);
+		entry.setEvictionPayLoad(key);
 
 		//explicitly evict when there are more objects in space the the cache size
 		int diff = getAmountInSpace().intValue() - getCacheSize();
@@ -39,7 +44,7 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 
 
 	public void remove(EvictableServerEntry entry){
-		getPriorities().get(getPriority(entry)).remove(entry);
+		getPriorities().get(getPriority(entry)).remove(entry.getEvictionPayLoad());
 
 		//keep track of number of objects in space
 		getAmountInSpace().decrementAndGet();
@@ -52,7 +57,8 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 		//priority with a lower value should be removed later
 		for(int i = getPriorities().size() - 1; i >= 0  && (counter < evictionQuota); i--) {
 			while(counter < evictionQuota)
-				if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(getPriorities().get(i).peek()))
+				if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
+						getPriorities().get(i).pollFirstEntry().getValue()))
 					counter++;
 		}	
 		return counter;
@@ -60,8 +66,16 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 	}
 
 
-	List<ConcurrentLinkedQueue<EvictableServerEntry>> getPriorities() {
+	List<ConcurrentSkipListMap<Long, EvictableServerEntry>> getPriorities() {
 		return priorities;
+	}
+
+	public AtomicLong getIndex() {
+		return index;
+	}
+
+	public void setIndex(AtomicLong index) {
+		this.index = index;
 	}
 
 }
