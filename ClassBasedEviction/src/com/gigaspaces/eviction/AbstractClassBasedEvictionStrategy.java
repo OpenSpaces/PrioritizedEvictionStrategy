@@ -1,8 +1,9 @@
 package com.gigaspaces.eviction;
 
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
+import com.gigaspaces.eviction.singleorder.Priority;
 import com.gigaspaces.server.eviction.EvictableServerEntry;
 import com.gigaspaces.server.eviction.EvictionStrategy;
 import com.gigaspaces.server.eviction.SpaceCacheInteractor;
@@ -12,24 +13,21 @@ public abstract class AbstractClassBasedEvictionStrategy extends EvictionStrateg
 	private SpaceCacheInteractor spaceCacheInteractor;
 	private Properties spaceProperties;
 	protected Integer cacheSize;
-	protected static final int PRIORITIES_SIZE = 3;
-	
-
-	protected AtomicInteger amountInSpace;
+	protected AtomicLong amountInSpace;
 
 	public void init(SpaceCacheInteractor spaceCacheInteractor, Properties spaceProperties){
 		this.spaceCacheInteractor = spaceCacheInteractor;
 		this.spaceProperties = spaceProperties;
 		cacheSize = (Integer) spaceProperties.get("CACHE_SIZE");
-		amountInSpace = new AtomicInteger(0);
+		amountInSpace = new AtomicLong(0);
 	}
 	
-	protected Integer getPriority(EvictableServerEntry entry) {
+	protected Priority getPriority(EvictableServerEntry entry) {
 		int priority = entry.getSpaceTypeDescriptor().getObjectClass()
 				.getAnnotation(SpaceEvictionPriority.class).priority();
-		if(priority < 0 || priority >= PRIORITIES_SIZE)
-				throw new IllegalArgumentException("priority values should be between 0 and " + (PRIORITIES_SIZE - 1));
-		return priority;
+		if(priority < 0)
+				throw new IllegalArgumentException("priority values should be greater than 0");
+		return new Priority(priority);
 	}
 
 	protected OrderBy getOrderBy(EvictableServerEntry entry) {
@@ -44,7 +42,7 @@ public abstract class AbstractClassBasedEvictionStrategy extends EvictionStrateg
 		return spaceProperties;
 	}
 
-	public AtomicInteger getAmountInSpace() {
+	public AtomicLong getAmountInSpace() {
 		return amountInSpace;
 	}
 
