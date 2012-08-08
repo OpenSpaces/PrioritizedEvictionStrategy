@@ -1,41 +1,48 @@
 package com.gigaspaces.eviction.specificorder;
 
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.atomic.AtomicLong;
 
+import com.gigaspaces.eviction.Index;
+import com.gigaspaces.eviction.IndexValue;
 import com.gigaspaces.server.eviction.EvictableServerEntry;
 import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
 public class ClassSpecificEvictionLRUAdaptor extends
 ClassSpecificEvictionStrategyAdaptor {
 	private SpaceCacheInteractor spaceCacheInteractor;
-	private ConcurrentSkipListMap<Long, EvictableServerEntry> mapping;
-	private AtomicLong index;
+	private ConcurrentSkipListMap<IndexValue, EvictableServerEntry> mapping;
+	private Index index;
 
 	public ClassSpecificEvictionLRUAdaptor(SpaceCacheInteractor spaceCacheInteractor) {
 		this.spaceCacheInteractor = spaceCacheInteractor;
-		this.mapping = new ConcurrentSkipListMap<Long, EvictableServerEntry>();
-		this.index = new AtomicLong(0); 
+		this.mapping = new ConcurrentSkipListMap<IndexValue, EvictableServerEntry>();
+		this.index = new Index(); 
 	}
 
 	@Override
 	public void onInsert(EvictableServerEntry entry) {
-		put(entry);
+		IndexValue key = getIndex().incrementAndGet();
+		entry.setEvictionPayLoad(key);
+		getMapping().put(key, entry);
 	}
 
 	@Override
 	public void onLoad(EvictableServerEntry entry){
-		put(entry);
+		onInsert(entry);
 	}
 
 	@Override
 	public void touchOnRead(EvictableServerEntry entry){
-		put(entry);
+		if(getMapping().remove(entry.getEvictionPayLoad(), entry)){
+			IndexValue key = getIndex().incrementAndGet();
+			getMapping().put(key, entry);
+			entry.setEvictionPayLoad(key);
+		}
 	}
 
 	@Override
 	public void touchOnModify(EvictableServerEntry entry){
-		put(entry);	
+		touchOnRead(entry);	
 	}
 
 	@Override
@@ -54,22 +61,15 @@ ClassSpecificEvictionStrategyAdaptor {
 		return counter;
 	}
 	
-	protected void put(EvictableServerEntry entry) {
-		Long key = getIndex().incrementAndGet();
-		getMapping().remove(entry.getEvictionPayLoad(), entry);
-		entry.setEvictionPayLoad(key);
-		getMapping().put(key, entry);
-	}
-
 	public SpaceCacheInteractor getSpaceCacheInteractor() {
 		return spaceCacheInteractor;
 	}
 
-	private ConcurrentSkipListMap<Long, EvictableServerEntry> getMapping() {
+	private ConcurrentSkipListMap<IndexValue, EvictableServerEntry> getMapping() {
 		return mapping;
 	}
 
-	public AtomicLong getIndex() {
+	public Index getIndex() {
 		return index;
 	}
 
