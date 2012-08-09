@@ -104,9 +104,13 @@ public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStr
 				continue;
 			else {
 				Entry<IndexValue, EvictableServerEntry> firstEntry = map.firstEntry();
-				if(firstEntry != null && getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-						firstEntry.getValue()))
-					counter++;
+				while(firstEntry != null)
+					if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
+						firstEntry.getValue())){
+						counter++;
+						firstEntry = map.firstEntry();
+					}
+				
 			}
 		return counter;
 	}

@@ -118,14 +118,13 @@ public class LRUSingleOrderTest{
 	@Test
 	public void test4() throws Exception  {
 		logger.info("test 4 - memory shortage");
-		int mega = (int)Math.pow(2, 20);
-		final byte[] payload = new byte[100 * mega];
+		final int mega = (int)Math.pow(2, 20);
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
 		for (int i = 0; i < NUM_OF_THREADS; i++)
 			threadPool.execute(new Runnable(){			
 				@Override
 				public void run() {
-					for(int i = 0; i < cacheSize * 100; i++){
+					for(int i = 0; i < cacheSize * 10; i++){
 						Medal toWrite;	
 						if(i % 3 == 0)
 							toWrite = new GoldMedal(i);
@@ -133,7 +132,7 @@ public class LRUSingleOrderTest{
 							toWrite = new SilverMedal(i);
 						else
 							toWrite = new BronzeMedal(i);
-						toWrite.setWeight(payload);
+						toWrite.setWeight(new byte[mega]);
 						gigaSpace.write(toWrite);
 					}					
 				}

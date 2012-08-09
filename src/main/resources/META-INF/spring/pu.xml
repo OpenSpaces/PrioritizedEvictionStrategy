@@ -39,11 +39,6 @@
     <os-core:giga-space id="gigaSpace" space="space"/>
       
 
-		<!-- <bean id="LRUSingleOrderTest" class="org.openspaces.eviction.test.LRUSingleOrderTest" depends-on="gigaSpace" >
-        	<property name="cacheSize" value="1000"/>
-        	<property name="someName" value="asdasd"/>
-        </bean> -->
-
         <!-- The Feeder bean, writes objects to space -->
 
         <!-- <bean id="LRUFeeder" class="com.gigaspaces.feeder.LRUFeeder" depends-on="gigaSpace" >

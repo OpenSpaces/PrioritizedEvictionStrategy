@@ -17,6 +17,7 @@
 
 package org.openspaces.eviction.specificorder;
 
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.openspaces.eviction.Index;
@@ -78,14 +79,20 @@ public class ClassSpecificEvictionLRUStrategy extends EvictionStrategy {
 	}
 
 	@Override
-	public int  evict (int evictionQuota){ 
+	public int evict(int evictionQuota){ 
 		int counter = 0;
 		int mappingsSize = getMapping().size();
 		for(int i = 0; i < Math.min(mappingsSize, evictionQuota) 
-				&& counter < evictionQuota; i++)
-			if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-					getMapping().firstEntry().getValue()))
-				counter++;
+				&& counter < evictionQuota; i++) {
+			Entry<IndexValue, EvictableServerEntry> firstEntry = getMapping().firstEntry();
+			while(firstEntry != null){
+				if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
+						firstEntry.getValue())){
+					counter++;
+					firstEntry = getMapping().firstEntry();
+				}
+			}
+		}
 		return counter;
 	}
 	
