@@ -1,12 +1,31 @@
-package com.gigaspaces.eviction.singleorder;
+/*******************************************************************************
+ * Copyright (c) 2012 GigaSpaces Technologies Ltd. All
+ rights reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 
+package org.openspaces.eviction.singleorder;
+
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import com.gigaspaces.eviction.AbstractClassBasedEvictionStrategy;
-import com.gigaspaces.eviction.Index;
-import com.gigaspaces.eviction.IndexValue;
-import com.gigaspaces.eviction.Priority;
+import org.openspaces.eviction.AbstractClassBasedEvictionStrategy;
+import org.openspaces.eviction.Index;
+import org.openspaces.eviction.IndexValue;
+import org.openspaces.eviction.Priority;
+
 import com.gigaspaces.server.eviction.EvictableServerEntry;
 import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
@@ -39,6 +58,8 @@ public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStr
 		entry.setEvictionPayLoad(key);
 		getPriorities().get(getPriority(entry)).put(key, entry);
 
+		logger.finest("insterted entry with UID: " + entry.getUID() +
+				" to prioirty " + getPriority(entry) + " and key index: " + key);
 		//explicitly evict when there are more objects in space the the cache size
 		int diff = getAmountInSpace().intValue() - getCacheSize();
 		if(diff > 0)
@@ -76,14 +97,17 @@ public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStr
 	public int evict(int evictionQuota){ 
 		int counter = 0;
 
-			for(ConcurrentSkipListMap<IndexValue, EvictableServerEntry> map : getPriorities().values())
-				if(counter == evictionQuota)
-					break;
-				else if(map.isEmpty())
-					continue;
-				else if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-						map.firstEntry().getValue()))
-						counter++;
+		for(ConcurrentSkipListMap<IndexValue, EvictableServerEntry> map : getPriorities().values())
+			if(counter == evictionQuota)
+				break;
+			else if(map.isEmpty())
+				continue;
+			else {
+				Entry<IndexValue, EvictableServerEntry> firstEntry = map.firstEntry();
+				if(firstEntry != null && getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
+						firstEntry.getValue()))
+					counter++;
+			}
 		return counter;
 	}
 
