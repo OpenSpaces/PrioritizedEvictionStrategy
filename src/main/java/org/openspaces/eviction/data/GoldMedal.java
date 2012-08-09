@@ -15,25 +15,16 @@
  * limitations under the License.
  *******************************************************************************/
 
-package org.openspaces.feeder;
+package org.openspaces.eviction.data;
 
-import javax.annotation.PostConstruct;
+import org.openspaces.eviction.SpaceEvictionPriority;
 
-import org.apache.log4j.Logger;
-import org.openspaces.core.GigaSpace;
-import org.springframework.beans.factory.annotation.Autowired;
-
-public class ClassSpecificFeeder {
-	@Autowired
-	private GigaSpace gigaSpace;
-	private int cacheSize;
+@SpaceEvictionPriority(priority = 0)
+public class GoldMedal extends Medal{
 	
-	//mean trick
-	private static Logger logger = Logger.getLogger(new Object(){}.getClass().getEnclosingClass());
-
-	@PostConstruct
-	public void startFeeding()  {
-		logger.info(cacheSize);
+	public GoldMedal(){}
+	
+	public GoldMedal(int id){
+		super(id);
 	}
-
 }

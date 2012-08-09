@@ -15,7 +15,7 @@
  * limitations under the License.
  *******************************************************************************/
 
-package org.openspaces.data;
+package org.openspaces.eviction.data;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;

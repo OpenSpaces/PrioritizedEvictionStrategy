@@ -19,17 +19,16 @@
     <context:annotation-config />
 
     <!-- Scan for components (both Spring ones and OpenSpaces ones) -->
-    <context:component-scan base-package="com.gigaspaces.eviction" />
+    <context:component-scan base-package="org.openspaces.evcition" />
 
     <!-- Enables the usage of @GigaSpaceContext annotation based injection. -->
-
     <os-core:giga-space-context />
 
     <os-core:space id="space" url="/./mySpace?groups=sagi">
         <os-core:properties>
            <props>
 			<prop key="space-config.engine.cache_policy">2</prop>
-			<prop key="space-config.engine.eviction_strategy">com.gigaspaces.eviction.singleorder.ClassBasedEvictionLRUStrategy</prop>
+			<prop key="space-config.engine.eviction_strategy">org.openspaces.eviction.singleorder.ClassBasedEvictionLRUStrategy</prop>
 		    <prop key="space-config.engine.cache_size">1000</prop>
 	       </props>
       	</os-core:properties>
@@ -39,11 +38,17 @@
 
     <os-core:giga-space id="gigaSpace" space="space"/>
       
+
+		<!-- <bean id="LRUSingleOrderTest" class="org.openspaces.eviction.test.LRUSingleOrderTest" depends-on="gigaSpace" >
+        	<property name="cacheSize" value="1000"/>
+        	<property name="someName" value="asdasd"/>
+        </bean> -->
+
         <!-- The Feeder bean, writes objects to space -->
 
-        <bean id="LRUFeeder" class="com.gigaspaces.feeder.LRUFeeder" depends-on="gigaSpace" >
+        <!-- <bean id="LRUFeeder" class="com.gigaspaces.feeder.LRUFeeder" depends-on="gigaSpace" >
         <property name="cacheSize"><value>1000</value></property>
-        </bean>
+        </bean> -->
         
         <!-- <bean id="FIFOFeeder" class="com.gigaspaces.feeder.FIFOFeeder" depends-on="gigaSpace" >
         <property name="cacheSize"><value>1000</value></property>

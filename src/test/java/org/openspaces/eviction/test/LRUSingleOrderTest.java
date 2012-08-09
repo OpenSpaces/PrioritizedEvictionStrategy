@@ -15,7 +15,7 @@
  * limitations under the License.
  *******************************************************************************/
 
-package org.openspaces.test;
+package org.openspaces.eviction.test;
 
 
 
@@ -26,14 +26,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openspaces.core.GigaSpace;
-import org.openspaces.data.BronzeMedal;
-import org.openspaces.data.GoldMedal;
-import org.openspaces.data.Medal;
-import org.openspaces.data.SilverMedal;
+import org.openspaces.eviction.data.BronzeMedal;
+import org.openspaces.eviction.data.GoldMedal;
+import org.openspaces.eviction.data.Medal;
+import org.openspaces.eviction.data.SilverMedal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 
 import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
 import edu.emory.mathcs.backport.java.util.concurrent.Executors;
@@ -120,31 +119,41 @@ public class LRUSingleOrderTest{
 	public void test4() throws Exception  {
 		logger.info("test 4 - memory shortage");
 		int mega = (int)Math.pow(2, 20);
-		byte[] payload = new byte[10 * mega];
-		for(int i = 0; i < cacheSize * 10; i++){
-			Medal toWrite;	
-			if(i % 3 == 0)
-					 toWrite = new GoldMedal(i);
-				else if (i % 3 == 1)
-					toWrite = new SilverMedal(i);
-				else
-					toWrite = new BronzeMedal(i);
-				toWrite.setWeight(payload);
-				gigaSpace.write(toWrite);
-			}
-		Assert.assertTrue("amount of objects in space is larger then cache size",
-				gigaSpace.count(new Object()) == cacheSize);
+		final byte[] payload = new byte[100 * mega];
+		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
+		for (int i = 0; i < NUM_OF_THREADS; i++)
+			threadPool.execute(new Runnable(){			
+				@Override
+				public void run() {
+					for(int i = 0; i < cacheSize * 100; i++){
+						Medal toWrite;	
+						if(i % 3 == 0)
+							toWrite = new GoldMedal(i);
+						else if (i % 3 == 1)
+							toWrite = new SilverMedal(i);
+						else
+							toWrite = new BronzeMedal(i);
+						toWrite.setWeight(payload);
+						gigaSpace.write(toWrite);
+					}					
+				}
+			});
+			threadPool.shutdown();
+			threadPool.awaitTermination(30, TimeUnit.SECONDS);
+			Assert.assertTrue("amount of objects in space is larger then cache size",
+					gigaSpace.count(new Object()) == cacheSize);
 		}
 
 
 
 
 
-	public int getCacheSize() {
-		return cacheSize;
-	}
+		public int getCacheSize() {
+			return cacheSize;
+		}
 
-	public void setCacheSize(int cacheSize) {
-		this.cacheSize = cacheSize;
+		public void setCacheSize(int cacheSize) {
+			this.cacheSize = cacheSize;
+		}
+
 	}
-}

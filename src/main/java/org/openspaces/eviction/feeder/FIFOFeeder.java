@@ -15,7 +15,7 @@
  * limitations under the License.
  *******************************************************************************/
 
-package org.openspaces.feeder;
+package org.openspaces.eviction.feeder;
 
 import javax.annotation.PostConstruct;
 
