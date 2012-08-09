@@ -17,7 +17,7 @@
 
 package org.openspaces.eviction.singleorder;
 
-import java.util.Map.Entry;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -103,14 +103,14 @@ public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStr
 			else if(map.isEmpty())
 				continue;
 			else {
-				Entry<IndexValue, EvictableServerEntry> firstEntry = map.firstEntry();
-				while(firstEntry != null)
+				Iterator<EvictableServerEntry> iterator = map.values().iterator();
+				while(iterator.hasNext() && counter < evictionQuota){
 					if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-						firstEntry.getValue())){
+							iterator.next())){
 						counter++;
-						firstEntry = map.firstEntry();
 					}
-				
+				}
+
 			}
 		return counter;
 	}

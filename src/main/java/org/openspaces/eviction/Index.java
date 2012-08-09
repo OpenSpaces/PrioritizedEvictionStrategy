@@ -47,7 +47,7 @@ public class Index{
 			}
 		else return new IndexValue(getMajor(), minorValue);
 		//in the case the minor index was negative and upon entering the lock it 
-		//already is positive we get this thread to have another go at getting the index
+		//already is positive, we send this thread to have another go at getting the index
 		return incrementAndGet();
 	}
 

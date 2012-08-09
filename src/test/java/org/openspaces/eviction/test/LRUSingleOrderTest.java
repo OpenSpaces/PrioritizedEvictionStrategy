@@ -57,11 +57,15 @@ public class LRUSingleOrderTest{
 	@Test
 	public void test1() throws Exception  {
 		logger.info("test 1 - assert lru order");
+		logger.info("write low priority object");
 		gigaSpace.write(new BronzeMedal(0));
+		logger.info("fill cache exactly with hight priority object");
 		for (int i = 1; i < cacheSize; i++) {
 			gigaSpace.write(new GoldMedal(i));
 		}
-		gigaSpace.write(new BronzeMedal(100));
+		logger.info("write another lower priority object");
+		gigaSpace.write(new BronzeMedal(cacheSize));
+		logger.info("assert the first object was removed");
 		Assert.assertNull("BronzeMedal 0 was not evicted", gigaSpace.read(new BronzeMedal(0)));
 		logger.info("Test Passed 1");
 	}
@@ -70,6 +74,7 @@ public class LRUSingleOrderTest{
 	public void test2() {
 		logger.info("test 2 - assert only gold remains");
 
+		logger.info("fill the space with ten times cache size of different priority objects");
 		for (int i = 0; i < (cacheSize * 10); i++) {
 			if(i % 2 == 0)
 				gigaSpace.write(new GoldMedal(i));
@@ -114,17 +119,72 @@ public class LRUSingleOrderTest{
 		Assert.assertTrue("amount of objects in space is larger then cache size",
 				gigaSpace.count(new Object()) == cacheSize);
 	}
+	
 
 	@Test
 	public void test4() throws Exception  {
-		logger.info("test 4 - memory shortage");
+		logger.info("test 4 - lru logics");
+		gigaSpace.write(new SilverMedal(0));
+		
+		for (int i = 1; i <= cacheSize + 10; i++) {
+			if(i == (cacheSize/2))
+				gigaSpace.read(new SilverMedal(0));
+			else
+				gigaSpace.write(new SilverMedal(i));
+		}
+		Assert.assertTrue("amount of objects in space is larger then cache size",
+				gigaSpace.count(new Object()) == cacheSize);
+		Assert.assertNotNull("silver medal 0 is not in space",
+				gigaSpace.read(new SilverMedal(0)));
+		}
+
+
+	@Test
+	public void test5() throws Exception  {
+		logger.info("test 5 - lru logics");
+		gigaSpace.write(new GoldMedal(0));
+		
+		for (int i = 1; i <= cacheSize * 10; i++) {
+			if(i % 2 == 0) 
+				gigaSpace.write(new SilverMedal(i));
+			else
+				gigaSpace.write(new BronzeMedal(i));
+		}
+		Assert.assertTrue("amount of objects in space is larger then cache size",
+				gigaSpace.count(new Object()) == cacheSize);
+		Assert.assertNotNull("silver medal 0 is not in space",
+				gigaSpace.read(new GoldMedal(0)));
+		
+		
+		}
+
+	@Test
+	public void test6() throws Exception  {
+		logger.info("test 6 - lru logics");
+		SilverMedal silverMedal = new SilverMedal(0);
+		gigaSpace.write(silverMedal);
+		silverMedal.setContest("Butterfly 100m");
+		for (int i = 1; i <= cacheSize + 10; i++) {
+			if(i == (cacheSize/2))
+				gigaSpace.write(silverMedal);
+			else
+				gigaSpace.write(new SilverMedal(i));
+		}
+		Assert.assertTrue("amount of objects in space is larger then cache size",
+				gigaSpace.count(new Object()) == cacheSize);
+		Assert.assertNotNull("silver medal 0 is not in space",
+				gigaSpace.read(silverMedal));
+		}
+	@Test
+	public void test10() throws Exception  {
+		logger.info("test 10 - memory shortage");
 		final int mega = (int)Math.pow(2, 20);
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
 		for (int i = 0; i < NUM_OF_THREADS; i++)
 			threadPool.execute(new Runnable(){			
 				@Override
 				public void run() {
-					for(int i = 0; i < cacheSize * 10; i++){
+					for(int i = 0; i < cacheSize; i++){
 						Medal toWrite;	
 						if(i % 3 == 0)
 							toWrite = new GoldMedal(i);
@@ -138,12 +198,11 @@ public class LRUSingleOrderTest{
 				}
 			});
 			threadPool.shutdown();
-			threadPool.awaitTermination(30, TimeUnit.SECONDS);
+			threadPool.awaitTermination(60, TimeUnit.SECONDS);
 			Assert.assertTrue("amount of objects in space is larger then cache size",
-					gigaSpace.count(new Object()) == cacheSize);
+					gigaSpace.count(new Object()) <= cacheSize);
 		}
-
-
+	
 
 
 
