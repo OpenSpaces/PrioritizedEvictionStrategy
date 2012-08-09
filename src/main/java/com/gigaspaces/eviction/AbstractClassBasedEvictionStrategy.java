@@ -2,6 +2,7 @@ package com.gigaspaces.eviction;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Logger;
 
 import com.gigaspaces.server.eviction.EvictableServerEntry;
 import com.gigaspaces.server.eviction.EvictionStrategy;
@@ -20,8 +21,11 @@ public abstract class AbstractClassBasedEvictionStrategy extends EvictionStrateg
 	private Properties spaceProperties;
 	protected Integer cacheSize;
 	protected AtomicLong amountInSpace;
+	protected static final Logger logger = Logger.getLogger(com.gigaspaces.logger.Constants.LOGGER_CACHE );
 
 	public void init(SpaceCacheInteractor spaceCacheInteractor, Properties spaceProperties){
+		logger.config("started custom eviction strategy " + this.getClass().getSimpleName());
+		
 		this.spaceCacheInteractor = spaceCacheInteractor;
 		this.spaceProperties = spaceProperties;
 		cacheSize = (Integer) spaceProperties.get("CACHE_SIZE");

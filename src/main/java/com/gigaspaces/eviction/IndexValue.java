@@ -41,7 +41,7 @@ public class IndexValue implements Comparable<IndexValue>{
 
 	@Override
 	public String toString() {
-		return "IndexValue [major=" + major + ", minor=" + minor + "]";
+		return "[" + major + ", " + minor + "]";
 	}
 
 }

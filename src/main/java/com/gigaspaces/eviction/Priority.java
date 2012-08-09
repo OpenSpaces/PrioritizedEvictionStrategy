@@ -29,7 +29,7 @@ public class Priority implements Comparable<Priority> {
 
 	@Override
 	public String toString() {
-		return "Priority [priority=" + priority + "]";
+		return "[" + priority + "]";
 	}
 	
 }
