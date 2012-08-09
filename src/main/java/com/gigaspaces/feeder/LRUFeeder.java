@@ -14,7 +14,7 @@ import com.gigaspaces.data.BronzeMedal;
 import com.gigaspaces.data.GoldMedal;
 import com.gigaspaces.data.SilverMedal;
 
-public class Feeder {
+public class LRUFeeder {
 	@Autowired
 	private GigaSpace gigaSpace;
 	private int cacheSize;
