@@ -27,15 +27,15 @@ package org.openspaces.eviction;
 public class Priority implements Comparable<Priority> {
 	int priority;
 	
-	public Priority(Integer priority) {
+	public Priority(int priority) {
 		this.priority = priority;
 	}
 
-	public Integer getPriority() {
+	public int getPriority() {
 		return priority;
 	}
 
-	public void setPriority(Integer priority) {
+	public void setPriority(int priority) {
 		this.priority = priority;
 	}
 
