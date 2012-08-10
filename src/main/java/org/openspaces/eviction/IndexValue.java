@@ -34,7 +34,7 @@ public class IndexValue implements Comparable<IndexValue>{
 		this.setMinor(minor);
 	}
 
-	public Long getMajor() {
+	public long getMajor() {
 		return major;
 	}
 
@@ -42,7 +42,7 @@ public class IndexValue implements Comparable<IndexValue>{
 		this.major = major;
 	}
 
-	public Long getMinor() {
+	public long getMinor() {
 		return minor;
 	}
 
