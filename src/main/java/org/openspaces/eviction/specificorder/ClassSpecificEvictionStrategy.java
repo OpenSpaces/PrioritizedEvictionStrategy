@@ -55,34 +55,35 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 		int classHash = getEntryClassHash(entry);
 		Priority priority = getPriority(entry);
 
-		//handle class is first inserted to space
-		getPriorities().putIfAbsent(priority, new ConcurrentHashMap<Integer, EvictionStrategy>());
+		//handle priority value is first inserted to space
+		if(getPriorities().putIfAbsent(priority, new ConcurrentHashMap<Integer, EvictionStrategy>()) == null)
+			logger.finest("opened new priority listing for priority: " + getPriority(entry));
 
+		//handle class type is first inserted to space
 		if(!getPriorities().get(priority).containsKey(classHash)){
-			if(!getPriorities().get(priority).containsKey(classHash)){
-				switch(getOrderBy(entry)){
-				case FIFO:
-					getPriorities().get(priority).putIfAbsent(
-							classHash, new ClassSpecificEvictionFIFOStrategy(getSpaceCacheInteractor()));
-					break;
-				case LRU:
-					getPriorities().get(priority).putIfAbsent(
-							classHash, new ClassSpecificEvictionLRUStrategy(getSpaceCacheInteractor()));
-					break;
-				case NONE:
-					getPriorities().get(priority).putIfAbsent(
-							classHash, new ClassSpecificEvictionNoneStrategy());
-				}
+			switch(getOrderBy(entry)){
+			case FIFO:
+				getPriorities().get(priority).putIfAbsent(
+						classHash, new ClassSpecificEvictionFIFOStrategy(getSpaceCacheInteractor()));
+				logger.finer("created new FIFO strategy for class " + 
+						entry.getSpaceTypeDescriptor().getObjectClass());
+				break;
+			case LRU:
+				getPriorities().get(priority).putIfAbsent(
+						classHash, new ClassSpecificEvictionLRUStrategy(getSpaceCacheInteractor()));
+				logger.finer("created new LRU strategy for class " + 
+						entry.getSpaceTypeDescriptor().getObjectClass());
+				break;
+			case NONE:
+				getPriorities().get(priority).putIfAbsent(
+						classHash, new ClassSpecificEvictionNoneStrategy());
+				logger.finer("created new NONE strategy for class " + 
+						entry.getSpaceTypeDescriptor().getObjectClass());
 			}
 
 			getSpecificStrategy(entry).onInsert(entry);
 		}
 	}
-
-	protected EvictionStrategy getSpecificStrategy(EvictableServerEntry entry) {
-		return getPriorities().get(getPriority(entry)).get(getEntryClassHash(entry));
-	}
-
 
 	public void onLoad(EvictableServerEntry entry){ 
 		getSpecificStrategy(entry).onLoad(entry);
@@ -100,7 +101,8 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 		getSpecificStrategy(entry).remove(entry);
 	}
 
-	public int  evict (int evictionQuota){ 
+
+	public int evict(int evictionQuota){ 
 		int counter = 0;
 
 		for(ConcurrentHashMap<Integer, EvictionStrategy> priorityLevel : getPriorities().values()){
@@ -124,6 +126,10 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 
 	private int getEntryClassHash(EvictableServerEntry entry) {
 		return entry.getSpaceTypeDescriptor().getObjectClass().hashCode();
+	}
+	
+	protected EvictionStrategy getSpecificStrategy(EvictableServerEntry entry) {
+		return getPriorities().get(getPriority(entry)).get(getEntryClassHash(entry));
 	}
 
 }
