@@ -19,9 +19,10 @@ package org.openspaces.eviction.singleorder;
 
 import java.util.Properties;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.openspaces.eviction.AbstractClassBasedEvictionStrategy;
+import org.openspaces.eviction.Index;
+import org.openspaces.eviction.IndexValue;
 import org.openspaces.eviction.Priority;
 
 import com.gigaspaces.server.eviction.EvictableServerEntry;
@@ -35,21 +36,21 @@ import com.gigaspaces.server.eviction.SpaceCacheInteractor;
  * @since 9.1.0
  */
 public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionStrategy {
-	private ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<Long, EvictableServerEntry>> priorities;
-	private AtomicLong index; 
+	private ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<IndexValue, EvictableServerEntry>> priorities;
+	private Index index; 
 
 	public void init(SpaceCacheInteractor spaceCacheInteractor, Properties spaceProperties){
-		priorities = new ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<Long, EvictableServerEntry>>();
-		index = new AtomicLong(0);
+		priorities = new ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<IndexValue, EvictableServerEntry>>();
+		index = new Index();
 	}
 
 	public void onInsert(EvictableServerEntry entry){
 		//keep track of number of objects in space
 		getAmountInSpace().incrementAndGet();
 
-		Long key = getIndex().incrementAndGet();
+		IndexValue key = getIndex().incrementAndGet();
 		getPriorities().putIfAbsent(getPriority(entry),
-				new ConcurrentSkipListMap<Long, EvictableServerEntry>());
+				new ConcurrentSkipListMap<IndexValue, EvictableServerEntry>());
 		getPriorities().get(getPriority(entry)).put(key, entry);
 		entry.setEvictionPayLoad(key);
 		
@@ -78,7 +79,7 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 	public int evict(int evictionQuota){ 
 		int counter = 0;
 
-		for(ConcurrentSkipListMap<Long, EvictableServerEntry> queue : getPriorities().values()){
+		for(ConcurrentSkipListMap<IndexValue, EvictableServerEntry> queue : getPriorities().values()){
 			if(counter == evictionQuota)
 				break;
 			if(queue.isEmpty())
@@ -91,16 +92,13 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 	}
 
 
-	ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<Long, EvictableServerEntry>> getPriorities() {
+	ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<IndexValue, EvictableServerEntry>> getPriorities() {
 		return priorities;
 	}
 
-	public AtomicLong getIndex() {
+	public Index getIndex() {
 		return index;
 	}
 
-	public void setIndex(AtomicLong index) {
-		this.index = index;
-	}
 
 }
