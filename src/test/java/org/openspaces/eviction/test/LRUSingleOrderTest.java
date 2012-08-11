@@ -39,7 +39,7 @@ import edu.emory.mathcs.backport.java.util.concurrent.Executors;
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:META-INF/spring/pu.xml"})
+@ContextConfiguration(locations = {"classpath:META-INF/spring/pu-lru.xml"})
 public class LRUSingleOrderTest{
 	private static final int NUM_OF_THREADS = 10;
 	@Autowired
