@@ -40,7 +40,7 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 	
 		//handle new priority value in space
 		if(getPriorities().putIfAbsent(getPriority(entry), new ConcurrentSkipListMap<IndexValue, EvictableServerEntry>())
-				!= null)
+				== null)
 			logger.finest("opened new priority listing for priority: " + getPriority(entry));
 	
 		IndexValue key = getIndex().incrementAndGet();
