@@ -17,9 +17,10 @@
 
 package org.openspaces.eviction.data;
 
+import org.openspaces.eviction.OrderBy;
 import org.openspaces.eviction.SpaceEvictionPriority;
 
-@SpaceEvictionPriority(priority = 1)
+@SpaceEvictionPriority(priority = 1, orderBy = OrderBy.LRU)
 public class SilverMedal extends Medal {
 	
 	public SilverMedal(){}
