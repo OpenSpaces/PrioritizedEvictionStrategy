@@ -17,16 +17,11 @@
 
 package org.openspaces.eviction.singleorder;
 
-import java.util.Properties;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import org.openspaces.eviction.AbstractClassBasedEvictionStrategy;
-import org.openspaces.eviction.Index;
 import org.openspaces.eviction.IndexValue;
-import org.openspaces.eviction.Priority;
 
 import com.gigaspaces.server.eviction.EvictableServerEntry;
-import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
 /**
  * This strategy evicts objects from the space, first according to the priority
@@ -35,15 +30,7 @@ import com.gigaspaces.server.eviction.SpaceCacheInteractor;
  * @author Sagi Bernstein
  * @since 9.1.0
  */
-public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionStrategy {
-	private ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<IndexValue, EvictableServerEntry>> priorities;
-	private Index index; 
-
-	public void init(SpaceCacheInteractor spaceCacheInteractor, Properties spaceProperties){
-		priorities = new ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<IndexValue, EvictableServerEntry>>();
-		index = new Index();
-	}
-
+public class ClassBasedEvictionFIFOStrategy extends ClassBasedEvicitionStrategy {
 	public void onInsert(EvictableServerEntry entry){
 		//keep track of number of objects in space
 		getAmountInSpace().incrementAndGet();
@@ -73,31 +60,6 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 			throw new RuntimeException("entry " + entry + "should be in the queue");
 		//keep track of number of objects in space
 		getAmountInSpace().decrementAndGet();
-	}
-
-
-	public int evict(int evictionQuota){ 
-		int counter = 0;
-
-		for(ConcurrentSkipListMap<IndexValue, EvictableServerEntry> queue : getPriorities().values()){
-			if(counter == evictionQuota)
-				break;
-			if(queue.isEmpty())
-				continue;
-			if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-					getPriorities().firstEntry().getValue().firstEntry().getValue()))
-				counter++;
-		}
-		return counter;
-	}
-
-
-	ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<IndexValue, EvictableServerEntry>> getPriorities() {
-		return priorities;
-	}
-
-	public Index getIndex() {
-		return index;
 	}
 
 

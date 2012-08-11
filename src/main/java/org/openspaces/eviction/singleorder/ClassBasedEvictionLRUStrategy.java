@@ -17,17 +17,11 @@
 
 package org.openspaces.eviction.singleorder;
 
-import java.util.Iterator;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import org.openspaces.eviction.AbstractClassBasedEvictionStrategy;
-import org.openspaces.eviction.Index;
 import org.openspaces.eviction.IndexValue;
-import org.openspaces.eviction.Priority;
 
 import com.gigaspaces.server.eviction.EvictableServerEntry;
-import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 
 
 /**
@@ -37,16 +31,7 @@ import com.gigaspaces.server.eviction.SpaceCacheInteractor;
  * @author Sagi Bernstein
  * @since 9.1.0
  */
-public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStrategy {
-	ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<IndexValue, EvictableServerEntry>> priorities;
-	Index index;
-
-	public void init(SpaceCacheInteractor spaceCacheInteractor, Properties spaceProperties){
-		super.init(spaceCacheInteractor, spaceProperties);
-		this.index = new Index();
-		priorities = new ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<IndexValue, EvictableServerEntry>>();
-	}
-
+public class ClassBasedEvictionLRUStrategy extends ClassBasedEvicitionStrategy {
 	public void onInsert(EvictableServerEntry entry){
 		//keep track of number of objects in space
 		getAmountInSpace().incrementAndGet();
@@ -91,37 +76,6 @@ public class ClassBasedEvictionLRUStrategy extends AbstractClassBasedEvictionStr
 			throw new RuntimeException("entry " + entry + "should be in the map");
 		//keep track of number of objects in space
 		getAmountInSpace().decrementAndGet();
-	}
-
-
-	public int evict(int evictionQuota){ 
-		int counter = 0;
-
-		for(ConcurrentSkipListMap<IndexValue, EvictableServerEntry> map : getPriorities().values())
-			if(counter == evictionQuota)
-				break;
-			else if(map.isEmpty())
-				continue;
-			else {
-				Iterator<EvictableServerEntry> iterator = map.values().iterator();
-				while(iterator.hasNext() && counter < evictionQuota){
-					if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-							iterator.next())){
-						counter++;
-					}
-				}
-
-			}
-		return counter;
-	}
-
-
-	public Index getIndex() {
-		return index;
-	}
-
-	public ConcurrentSkipListMap<Priority, ConcurrentSkipListMap<IndexValue, EvictableServerEntry>> getPriorities() {
-		return priorities;
 	}
 
 }
