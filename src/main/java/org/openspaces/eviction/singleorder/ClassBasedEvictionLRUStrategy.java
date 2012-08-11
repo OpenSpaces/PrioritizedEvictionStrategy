@@ -17,7 +17,6 @@
 
 package org.openspaces.eviction.singleorder;
 
-import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.openspaces.eviction.IndexValue;
 
@@ -31,32 +30,7 @@ import com.gigaspaces.server.eviction.EvictableServerEntry;
  * @author Sagi Bernstein
  * @since 9.1.0
  */
-public class ClassBasedEvictionLRUStrategy extends ClassBasedEvicitionStrategy {
-	public void onInsert(EvictableServerEntry entry){
-		//keep track of number of objects in space
-		getAmountInSpace().incrementAndGet();
-
-		//handle new priority value in space
-		getPriorities().putIfAbsent(getPriority(entry), new ConcurrentSkipListMap<IndexValue, EvictableServerEntry>());
-
-		IndexValue key = getIndex().incrementAndGet();
-		entry.setEvictionPayLoad(key);
-		getPriorities().get(getPriority(entry)).put(key, entry);
-
-		logger.finest("insterted entry with UID: " + entry.getUID() +
-				" to prioirty " + getPriority(entry) + " and key index: " + key);
-		//explicitly evict when there are more objects in space the the cache size
-		int diff = getAmountInSpace().intValue() - getCacheSize();
-		if(diff > 0)
-			evict(diff);
-	}
-
-
-	public void onLoad(EvictableServerEntry entry){ 
-		onInsert(entry);
-	}
-
-
+public class ClassBasedEvictionLRUStrategy extends ClassBasedEvictionFIFOStrategy {
 	public void touchOnRead(EvictableServerEntry entry){
 		if(getPriorities().get(getPriority(entry)).remove(entry.getEvictionPayLoad(), entry)){
 			IndexValue key = getIndex().incrementAndGet();
@@ -68,14 +42,6 @@ public class ClassBasedEvictionLRUStrategy extends ClassBasedEvicitionStrategy {
 
 	public void touchOnModify(EvictableServerEntry entry){
 		touchOnRead(entry);
-	}
-
-
-	public void remove(EvictableServerEntry entry){
-		if(getPriorities().get(getPriority(entry)).remove(entry.getEvictionPayLoad()) == null)
-			throw new RuntimeException("entry " + entry + "should be in the map");
-		//keep track of number of objects in space
-		getAmountInSpace().decrementAndGet();
 	}
 
 }
