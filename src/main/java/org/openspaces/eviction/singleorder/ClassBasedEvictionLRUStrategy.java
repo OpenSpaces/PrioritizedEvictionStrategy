@@ -31,6 +31,7 @@ import com.gigaspaces.server.eviction.EvictableServerEntry;
  * @since 9.1.0
  */
 public class ClassBasedEvictionLRUStrategy extends ClassBasedEvictionFIFOStrategy {
+	
 	public void touchOnRead(EvictableServerEntry entry){
 		if(getPriorities().get(getPriority(entry)).remove(entry.getEvictionPayLoad(), entry)){
 			IndexValue key = getIndex().incrementAndGet();
