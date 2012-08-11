@@ -81,13 +81,16 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 			else {
 				Iterator<EvictableServerEntry> iterator = priority.values().iterator();
 				while(iterator.hasNext() && counter < evictionQuota){
-					if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-							iterator.next())){
+					EvictableServerEntry next = iterator.next();
+					logger.finest("trying to evict entry with UID: " + next.getUID() +
+							", prioirty " + getPriority(next) + " and key index: " + next.getEvictionPayLoad());
+					if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(next)){
 						counter++;
 					}
 				}
 	
 			}
+		logger.finest("got request to evict " + evictionQuota + " entries, evicted " + counter);
 		return counter;
 	}
 
