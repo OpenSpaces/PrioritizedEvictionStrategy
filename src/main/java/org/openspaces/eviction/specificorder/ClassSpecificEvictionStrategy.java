@@ -44,14 +44,15 @@ import com.gigaspaces.server.eviction.SpaceCacheInteractor;
 public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStrategy{
 	public static final int MAX_THREADS = 100;
 	ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, EvictionStrategy>> priorities;
-
+	
+	@Override
 	public void init(SpaceCacheInteractor spaceCacheInteractor, Properties spaceProperties){
 		super.init(spaceCacheInteractor, spaceProperties);
 		priorities = new ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, EvictionStrategy>>();
 	}
 
-	public void onInsert(EvictableServerEntry entry)
-	{
+	@Override
+	public void onInsert(EvictableServerEntry entry){
 		int classHash = getEntryClassHash(entry);
 		Priority priority = getPriority(entry);
 
@@ -64,13 +65,13 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 			switch(getOrderBy(entry)){
 			case FIFO:
 				getPriorities().get(priority).putIfAbsent(
-						classHash, new ClassSpecificEvictionFIFOStrategy(getSpaceCacheInteractor()));
+						classHash, new ClassSpecificEvictionFIFOStrategy(getSpaceCacheInteractor(), getAmountInSpace()));
 				logger.finer("created new FIFO strategy for class " + 
 						entry.getSpaceTypeDescriptor().getObjectClass());
 				break;
 			case LRU:
 				getPriorities().get(priority).putIfAbsent(
-						classHash, new ClassSpecificEvictionLRUStrategy(getSpaceCacheInteractor()));
+						classHash, new ClassSpecificEvictionLRUStrategy(getSpaceCacheInteractor(), getAmountInSpace()));
 				logger.finer("created new LRU strategy for class " + 
 						entry.getSpaceTypeDescriptor().getObjectClass());
 				break;
@@ -82,26 +83,38 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 			}
 
 			getSpecificStrategy(entry).onInsert(entry);
+			
+			//keep track of number of objects in space
+			getAmountInSpace().incrementAndGet();
+			
+			int diff = getAmountInSpace().intValue() - getCacheSize();
+			if(diff > 0)
+				evict(diff);
 		}
 	}
 
+	@Override
 	public void onLoad(EvictableServerEntry entry){ 
 		getSpecificStrategy(entry).onLoad(entry);
 	}
 
+	@Override
 	public void touchOnRead(EvictableServerEntry entry){
 		getSpecificStrategy(entry).touchOnRead(entry);
 	}
 
+	@Override
 	public void touchOnModify(EvictableServerEntry entry){
 		getSpecificStrategy(entry).touchOnModify(entry);
 	}
 
+	@Override
 	public void remove(EvictableServerEntry entry){
 		getSpecificStrategy(entry).remove(entry);
 	}
 
 
+	@Override
 	public int evict(int evictionQuota){ 
 		int counter = 0;
 

@@ -66,6 +66,7 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 			throw new RuntimeException("entry " + entry + "should be in the queue");
 		logger.finest("removed entry with UID: " + entry.getUID() +
 				", prioirty " + getPriority(entry) + " and key index: " + entry.getEvictionPayLoad());
+		
 		//keep track of number of objects in space
 		getAmountInSpace().decrementAndGet();
 	}

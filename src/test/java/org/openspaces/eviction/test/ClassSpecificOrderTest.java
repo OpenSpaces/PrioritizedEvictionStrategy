@@ -58,7 +58,7 @@ public class ClassSpecificOrderTest{
 	public void test1() throws Exception  {
 		logger.info("test 1 - assert none order does not evict");
 		logger.info("fill cache with ten times its amount with none order by");
-		for (int i = 1; i < cacheSize * 10; i++) {
+		for (int i = 0; i < cacheSize * 10; i++) {
 			gigaSpace.write(new GoldMedal(i));
 		}
 		logger.info("assert none order does not evict");
@@ -68,12 +68,12 @@ public class ClassSpecificOrderTest{
 
 	@Test
 	public void test2() {
-		logger.info("test 2 - assert only gold remains");
+		logger.info("test 2 - assert only silver remains");
 
 		logger.info("fill the space with ten times cache size of different priority objects");
-		for (int i = 0; i < (cacheSize * 10); i++) {
+		for (int i = 0; i < cacheSize * 10; i++) {
 			if(i % 2 == 0)
-				gigaSpace.write(new GoldMedal(i));
+				gigaSpace.write(new BronzeMedal(i));
 			else
 				gigaSpace.write(new SilverMedal(i));
 		}
