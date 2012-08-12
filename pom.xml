@@ -7,7 +7,7 @@
   
   	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<gsVersion>(9.0.0,9.1.0]</gsVersion>
+		<gsVersion>9.1.0-m3-7491-274</gsVersion>
 	</properties>
 
 	<repositories>
