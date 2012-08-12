@@ -7,7 +7,7 @@
   
   	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<gsVersion>(,9.1.0]</gsVersion>
+		<gsVersion>(9.0.0,9.1.0]</gsVersion>
 	</properties>
 
 	<repositories>
@@ -18,6 +18,24 @@
 	</repositories>  
   
   <dependencies>
+        <dependency>
+			<groupId>com.gigaspaces</groupId>
+			<artifactId>gs-openspaces</artifactId>
+			<version>${gsVersion}</version>
+			<!-- <scope>provided</scope> -->
+		</dependency>
+           <dependency>
+			<groupId>com.gigaspaces</groupId>
+			<artifactId>gs-runtime</artifactId>
+			<version>${gsVersion}</version>
+			<!-- <scope>provided</scope> -->
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>3.1.2.RELEASE</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -30,24 +48,5 @@
 			<version>1.2.17</version>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-			<groupId>com.gigaspaces</groupId>
-			<artifactId>gs-openspaces</artifactId>
-			<version>${gsVersion}</version>
-			<scope>provided</scope>
-		</dependency>
-           <dependency>
-			<groupId>com.gigaspaces</groupId>
-			<artifactId>gs-runtime</artifactId>
-			<version>${gsVersion}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-test</artifactId>
-			<version>3.1.2.RELEASE</version>
-			<scope>test</scope>
-		</dependency>
-            
   </dependencies>
 </project>
