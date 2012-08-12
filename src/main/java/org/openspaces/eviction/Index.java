@@ -37,7 +37,7 @@ public class Index{
 	}
 
 	public IndexValue incrementAndGet(){
-		Long minorValue = getMinor().incrementAndGet();
+		long minorValue = getMinor().incrementAndGet();
 		
 		if(minorValue < 0)
 			synchronized (this) {
