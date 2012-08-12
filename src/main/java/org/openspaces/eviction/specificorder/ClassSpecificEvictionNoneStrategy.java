@@ -17,6 +17,9 @@
 
 package org.openspaces.eviction.specificorder;
 
+import java.util.concurrent.atomic.AtomicLong;
+
+import com.gigaspaces.server.eviction.EvictableServerEntry;
 import com.gigaspaces.server.eviction.EvictionStrategy;
 
 /**
@@ -28,5 +31,20 @@ import com.gigaspaces.server.eviction.EvictionStrategy;
  * @since 9.1.0
  */
 public class ClassSpecificEvictionNoneStrategy extends EvictionStrategy{
+	private AtomicLong amountInSpace;
+	
+	public ClassSpecificEvictionNoneStrategy(AtomicLong amountInSpace) {
+		this.amountInSpace = amountInSpace;
+	}
+
+	public AtomicLong getAmountInSpace() {
+		return amountInSpace;
+	}
+	
+	@Override
+	public void remove(EvictableServerEntry entry){
+		//keep track of number of objects in space
+		getAmountInSpace().decrementAndGet();
+	}
 
 }

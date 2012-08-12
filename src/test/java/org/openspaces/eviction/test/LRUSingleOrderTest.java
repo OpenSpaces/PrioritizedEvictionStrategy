@@ -95,8 +95,6 @@ public class LRUSingleOrderTest{
 
 	@Test
 	public void test3() throws InterruptedException {
-		gigaSpace.clear(new Object());
-
 		logger.info("test 3 - multi threaded");
 		logger.info("fill the space with entries");		
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);

@@ -19,6 +19,10 @@ package org.openspaces.eviction.test;
 
 
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
@@ -33,10 +37,6 @@ import org.openspaces.eviction.data.SilverMedal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:META-INF/spring/pu.xml"})
@@ -56,7 +56,7 @@ public class ClassSpecificOrderTest{
 
 	@Test
 	public void test1() throws Exception  {
-		logger.info("test 1 - assert none order does not evict");
+		logger.info("test 1 - assert none order objects do not get evicted");
 		logger.info("fill cache with ten times its amount with none order by");
 		for (int i = 0; i < cacheSize * 10; i++) {
 			gigaSpace.write(new GoldMedal(i));
@@ -67,7 +67,7 @@ public class ClassSpecificOrderTest{
 	}
 
 	@Test
-	public void test2() {
+	public void test2() throws InterruptedException {
 		logger.info("test 2 - assert only silver remains");
 
 		logger.info("fill the space with ten times cache size of different priority objects");
@@ -77,22 +77,20 @@ public class ClassSpecificOrderTest{
 			else
 				gigaSpace.write(new SilverMedal(i));
 		}
-		Assert.assertTrue("amount of objects in space is larger then cache size",
-				gigaSpace.count(new Object()) == cacheSize);
+		Assert.assertEquals("amount of objects in space is larger then cache size",
+				cacheSize, gigaSpace.count(new Object()));
 		//space will not evict an inserted object that calls to evict
 		//so if the last insert is not gold it will stay in space
 		logger.info("assert no more than one object of lower priority is in space");
 		Assert.assertTrue("not all objects in space are of the highest priority",
-				gigaSpace.count(new Object()) == gigaSpace.count(new GoldMedal()) + 1
-				|| gigaSpace.count(new Object()) == gigaSpace.count(new GoldMedal()));
+				gigaSpace.count(new Object()) == gigaSpace.count(new SilverMedal()) + 1
+				|| gigaSpace.count(new Object()) == gigaSpace.count(new SilverMedal()));
 
 		logger.info("Test Passed 2");
 	}
 
 	@Test
 	public void test3() throws InterruptedException {
-		gigaSpace.clear(new Object());
-
 		logger.info("test 3 - multi threaded");
 		logger.info("fill the space with entries");		
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
@@ -101,7 +99,7 @@ public class ClassSpecificOrderTest{
 
 				@Override
 				public void run() {
-					for (int i = 0; i < (cacheSize * 10); i++) {
+					for (int i = 0; i < cacheSize * 10; i++) {
 						if(i % 3 == 0)
 							gigaSpace.write(new GoldMedal(i));
 						else if (i % 3 == 1)
@@ -114,9 +112,10 @@ public class ClassSpecificOrderTest{
 		}
 		threadPool.shutdown();
 		threadPool.awaitTermination(60, TimeUnit.SECONDS);
-		logger.info("assert only objects only amount to cache size");		
-		Assert.assertTrue("amount of objects in space is larger then cache size",
-				gigaSpace.count(new Object()) == cacheSize);
+		logger.info("assert only objects with none are left");		
+		Assert.assertTrue("not all objects in space are of the highest priority",
+				gigaSpace.count(new Object()) == gigaSpace.count(new GoldMedal()) + 1
+				|| gigaSpace.count(new Object()) == gigaSpace.count(new GoldMedal()));
 	}
 
 
@@ -209,8 +208,8 @@ public class ClassSpecificOrderTest{
 			});
 		threadPool.shutdown();
 		threadPool.awaitTermination(60, TimeUnit.SECONDS);
-		Assert.assertTrue("amount of objects in space is larger then cache size",
-				gigaSpace.count(new Object()) <= cacheSize);
+		Assert.assertEquals("not only gold medals remain in space",
+				gigaSpace.count(new Object()),  gigaSpace.count(new GoldMedal()));
 	}
 
 

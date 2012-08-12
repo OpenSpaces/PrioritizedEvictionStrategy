@@ -95,8 +95,6 @@ public class FIFOSingleOrderTest{
 
 	@Test
 	public void test3() throws InterruptedException {
-		gigaSpace.clear(new Object());
-
 		logger.info("test 3 - multi threaded");
 		logger.info("fill the space with entries");		
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
@@ -119,10 +117,13 @@ public class FIFOSingleOrderTest{
 		threadPool.shutdown();
 		threadPool.awaitTermination(60, TimeUnit.SECONDS);
 		logger.info("assert only objects only amount to cache size");		
-		Assert.assertTrue("amount of objects in space is larger then cache size",
-				gigaSpace.count(new Object()) == cacheSize);
+		Assert.assertEquals("amount of objects in space is larger then cache size",
+				gigaSpace.count(new Object()), cacheSize);
+		Assert.assertTrue("more silver than gold or more bronze than silver", 
+				gigaSpace.count(new GoldMedal()) > gigaSpace.count(new SilverMedal()) 
+				&& gigaSpace.count(new SilverMedal()) > gigaSpace.count(new BronzeMedal()));
 	}
-	
+
 
 
 
@@ -132,26 +133,62 @@ public class FIFOSingleOrderTest{
 		logger.info("test 4 - fifo logics");
 		logger.info("write high priority object");
 		gigaSpace.write(new GoldMedal(0));
-		
-		logger.info("fille the cache with ten times its size of lower priority objects");
+
+		logger.info("fill the cache with ten times its size of lower priority objects");
 		for (int i = 1; i <= cacheSize * 10; i++) {
 			if(i % 2 == 0) 
 				gigaSpace.write(new SilverMedal(i));
 			else
 				gigaSpace.write(new BronzeMedal(i));
 		}
-		
+
 		Assert.assertTrue("amount of objects in space is larger then cache size",
 				gigaSpace.count(new Object()) == cacheSize);
 
 		logger.info("assert the original object is still in cache");
-		Assert.assertNotNull("silver medal 0 is not in space",
+		Assert.assertNotNull("gold medal 0 is not in space",
 				gigaSpace.read(new GoldMedal(0)));
-		
-		
-		}
 
-	
+
+	}
+
+	@Test
+	public void test5() throws InterruptedException {
+		logger.info("test 3 - load test");
+		logger.info("fill the space with entries");		
+		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
+		for (int i = 0; i < NUM_OF_THREADS; i++) {
+			threadPool.execute(new Runnable() {
+
+				@Override
+				public void run() {
+					for (int i = 0; i < cacheSize * 10; i++) {
+						if(i % 3 == 0)
+							gigaSpace.write(new GoldMedal(i));
+						else if (i % 3 == 1)
+							gigaSpace.write(new SilverMedal(i));
+						else
+							gigaSpace.write(new BronzeMedal(i));
+						if(Math.random() < 0.5){
+							if(i % 3 == 0)
+								gigaSpace.take(new GoldMedal());
+							else if (i % 3 == 1)
+								gigaSpace.take(new SilverMedal());
+							else
+								gigaSpace.take(new BronzeMedal());
+						}
+					}
+				}
+			});
+		}
+		threadPool.shutdown();
+		threadPool.awaitTermination(60, TimeUnit.SECONDS);
+		Assert.assertTrue("more silver than gold or more bronze than silver",
+				gigaSpace.count(new GoldMedal()) > gigaSpace.count(new SilverMedal()) 
+				&& gigaSpace.count(new SilverMedal()) > gigaSpace.count(new BronzeMedal()));
+	}
+
+
 	@Test
 	public void test10() throws Exception  {
 		logger.info("test 10 - memory shortage");
@@ -161,7 +198,7 @@ public class FIFOSingleOrderTest{
 			threadPool.execute(new Runnable(){			
 				@Override
 				public void run() {
-					for(int i = 0; i < cacheSize; i++){
+					for(int i = 0; i < cacheSize * 10; i++){
 						Medal toWrite;	
 						if(i % 3 == 0)
 							toWrite = new GoldMedal(i);
@@ -174,21 +211,21 @@ public class FIFOSingleOrderTest{
 					}					
 				}
 			});
-			threadPool.shutdown();
-			threadPool.awaitTermination(60, TimeUnit.SECONDS);
-			Assert.assertTrue("amount of objects in space is larger then cache size",
-					gigaSpace.count(new Object()) <= cacheSize);
-		}
-	
-
-
-
-		public int getCacheSize() {
-			return cacheSize;
-		}
-
-		public void setCacheSize(int cacheSize) {
-			this.cacheSize = cacheSize;
-		}
-
+		threadPool.shutdown();
+		threadPool.awaitTermination(60, TimeUnit.SECONDS);
+		Assert.assertTrue("amount of objects in space is larger then cache size",
+				gigaSpace.count(new Object()) <= cacheSize);
 	}
+
+
+
+
+	public int getCacheSize() {
+		return cacheSize;
+	}
+
+	public void setCacheSize(int cacheSize) {
+		this.cacheSize = cacheSize;
+	}
+
+}

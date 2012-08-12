@@ -77,10 +77,11 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 				break;
 			case NONE:
 				getPriorities().get(priority).putIfAbsent(
-						classHash, new ClassSpecificEvictionNoneStrategy());
+						classHash, new ClassSpecificEvictionNoneStrategy(getAmountInSpace()));
 				logger.finer("created new NONE strategy for class " + 
 						entry.getSpaceTypeDescriptor().getObjectClass());
 			}
+		}
 
 			getSpecificStrategy(entry).onInsert(entry);
 			
@@ -90,7 +91,6 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 			int diff = getAmountInSpace().intValue() - getCacheSize();
 			if(diff > 0)
 				evict(diff);
-		}
 	}
 
 	@Override
