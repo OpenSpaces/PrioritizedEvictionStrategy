@@ -75,7 +75,7 @@ public class LRUSingleOrderTest{
 		logger.info("test 2 - assert only gold remains");
 
 		logger.info("fill the space with ten times cache size of different priority objects");
-		for (int i = 0; i < (cacheSize * 10); i++) {
+		for (int i = 0; i < cacheSize * 10; i++) {
 			if(i % 2 == 0)
 				gigaSpace.write(new GoldMedal(i));
 			else
@@ -168,7 +168,7 @@ public class LRUSingleOrderTest{
 		logger.info("write high priority object");
 		gigaSpace.write(new GoldMedal(0));
 
-		logger.info("fille the cache with ten times its size of lower priority objects");
+		logger.info("fill the cache with ten times its size of lower priority objects");
 		for (int i = 1; i <= cacheSize * 10; i++) {
 			if(i % 2 == 0) 
 				gigaSpace.write(new SilverMedal(i));
