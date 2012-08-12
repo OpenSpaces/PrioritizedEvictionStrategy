@@ -25,35 +25,19 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.apache.log4j.Logger;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openspaces.core.GigaSpace;
 import org.openspaces.eviction.data.BronzeMedal;
 import org.openspaces.eviction.data.GoldMedal;
 import org.openspaces.eviction.data.Medal;
 import org.openspaces.eviction.data.SilverMedal;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:META-INF/spring/pu.xml"})
-public class ClassSpecificOrderTest{
-	private static final int NUM_OF_THREADS = 10;
-	@Autowired
-	private GigaSpace gigaSpace;
-	private int cacheSize = 1000;
-
-	//mean trick
-	private static Logger logger = Logger.getLogger(new Object(){}.getClass().getEnclosingClass());
-
-	@Before
-	public void cleanSpace(){
-		gigaSpace.clear(new Object());
-	}
-
+public class ClassSpecificOrderTest extends AbstractClassBasedEvictionTest{
+	
 	@Test
 	public void test1() throws Exception  {
 		logger.info("test 1 - assert none order objects do not get evicted");
@@ -182,6 +166,48 @@ public class ClassSpecificOrderTest{
 
 
 	}
+	
+	@Test
+	public void test7() throws InterruptedException {
+		logger.info("test 7 - load test");
+		logger.info("fill the space with entries");		
+		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
+		for (int i = 0; i < NUM_OF_THREADS; i++) {
+			threadPool.execute(new Runnable() {
+
+				@Override
+				public void run() {
+					for (int i = 0; i < cacheSize * 10; i++) {
+						switch(i % 3){
+						case 0:
+							gigaSpace.write(new GoldMedal(i));
+							gigaSpace.read(new BronzeMedal());
+							if(Math.random() < 0.5)
+								gigaSpace.take(new SilverMedal());
+							break;
+						case 1:
+							gigaSpace.write(new SilverMedal(i));
+							gigaSpace.read(new GoldMedal());
+							if(Math.random() < 0.5)
+								gigaSpace.take(new BronzeMedal());
+							break;
+						case 2:
+							gigaSpace.write(new BronzeMedal(i));
+							gigaSpace.read(new SilverMedal());
+							if(Math.random() < 0.5)
+								gigaSpace.take(new GoldMedal());
+							break;
+						}
+					}
+				}
+			});
+		}
+		threadPool.shutdown();
+		threadPool.awaitTermination(60, TimeUnit.SECONDS);
+		Assert.assertTrue("more silver than gold or more bronze than silver",
+				gigaSpace.count(new GoldMedal()) > gigaSpace.count(new SilverMedal()) 
+				&& gigaSpace.count(new SilverMedal()) > gigaSpace.count(new BronzeMedal()));
+	}
 
 
 	@Test
@@ -210,17 +236,6 @@ public class ClassSpecificOrderTest{
 		threadPool.awaitTermination(60, TimeUnit.SECONDS);
 		Assert.assertEquals("not only gold medals remain in space",
 				gigaSpace.count(new Object()),  gigaSpace.count(new GoldMedal()));
-	}
-
-
-
-
-	public int getCacheSize() {
-		return cacheSize;
-	}
-
-	public void setCacheSize(int cacheSize) {
-		this.cacheSize = cacheSize;
 	}
 
 }
