@@ -2,4 +2,4 @@ language: java
 jdk:
   - oraclejdk7
 
-script: "return 0;"
+script: ";"
