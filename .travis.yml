@@ -2,4 +2,4 @@ language: java
 jdk:
   - oraclejdk7
 
-script: "echo do not run test classes back to back since the set up doesn't supprot it;"
+script: "echo do not run test classes back to back since the set up doesn't supprot it && ls"
