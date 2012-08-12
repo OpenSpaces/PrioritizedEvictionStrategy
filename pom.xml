@@ -18,13 +18,13 @@
 	</repositories>  
   
   <dependencies>
-        <dependency>
+        	<dependency>
 			<groupId>com.gigaspaces</groupId>
 			<artifactId>gs-openspaces</artifactId>
 			<version>${gsVersion}</version>
 			<scope>provided</scope>
 		</dependency>
-           <dependency>
+           	<dependency>
 			<groupId>com.gigaspaces</groupId>
 			<artifactId>gs-runtime</artifactId>
 			<version>${gsVersion}</version>
@@ -46,7 +46,7 @@
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
-			<scope>test</scope>
+			<!-- <scope>test</scope> -->
 		</dependency>
   </dependencies>
 </project>
