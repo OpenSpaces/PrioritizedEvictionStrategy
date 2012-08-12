@@ -2,4 +2,4 @@ language: java
 jdk:
   - oraclejdk7
 
-test_script: "exit 0"
+script: "exit 0"
