@@ -220,7 +220,7 @@ public class LRUSingleOrderTest extends AbstractClassBasedEvictionTest{
 	@Test
 	public void test10() throws Exception  {
 		logger.info("test 10 - memory shortage");
-		final int mega = (int)Math.pow(2, 20);
+		final int mega = 1 << 20;
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
 		for (int i = 0; i < NUM_OF_THREADS; i++)
 			threadPool.execute(new Runnable(){			
