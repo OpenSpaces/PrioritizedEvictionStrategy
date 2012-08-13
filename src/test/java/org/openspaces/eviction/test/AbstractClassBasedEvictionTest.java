@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class AbstractClassBasedEvictionTest {
 
-	protected static final int NUM_OF_THREADS = 10;
+	protected static final int NUM_OF_THREADS = 30;
 	@Autowired
 	protected GigaSpace gigaSpace;
 	protected int cacheSize = 1000;

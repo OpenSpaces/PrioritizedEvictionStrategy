@@ -149,7 +149,7 @@ public class ClassSpecificOrderTest extends AbstractClassBasedEvictionTest{
 		logger.info("write high priority object");
 		gigaSpace.write(new GoldMedal(0));
 
-		logger.info("fille the cache with ten times its size of lower priority objects");
+		logger.info("fill the cache with ten times its size of lower priority objects");
 		for (int i = 1; i <= cacheSize * 10; i++) {
 			if(i % 2 == 0) 
 				gigaSpace.write(new SilverMedal(i));
@@ -204,9 +204,9 @@ public class ClassSpecificOrderTest extends AbstractClassBasedEvictionTest{
 		}
 		threadPool.shutdown();
 		threadPool.awaitTermination(60, TimeUnit.SECONDS);
-		Assert.assertTrue("more silver than gold or more bronze than silver",
+		Assert.assertTrue("more silver or bronze than gold",
 				gigaSpace.count(new GoldMedal()) > gigaSpace.count(new SilverMedal()) 
-				&& gigaSpace.count(new SilverMedal()) > gigaSpace.count(new BronzeMedal()));
+				&& gigaSpace.count(new GoldMedal()) > gigaSpace.count(new BronzeMedal()));
 	}
 
 
