@@ -23,7 +23,6 @@ import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openspaces.eviction.data.BronzeMedal;
@@ -39,11 +38,6 @@ public class FIFOSingleOrderTest extends AbstractClassBasedEvictionTest{
 	//mean trick
 	private static Logger logger = Logger.getLogger(new Object(){}.getClass().getEnclosingClass());
 
-	@BeforeClass
-	public static void garbageCollection(){
-		System.gc();
-	}
-	
 	@Before
 	public void cleanSpace(){
 		gigaSpace.clear(new Object());

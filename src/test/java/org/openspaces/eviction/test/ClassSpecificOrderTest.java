@@ -86,8 +86,8 @@ public class ClassSpecificOrderTest extends AbstractClassBasedEvictionTest{
 			else
 				gigaSpace.write(new SilverMedal(i));
 		}
-		Assert.assertTrue("amount of objects in space is larger than cache size",
-				gigaSpace.count(new Object()) == cacheSize);
+		Assert.assertEquals("amount of objects in space is larger than cache size",
+				gigaSpace.count(new Object()), cacheSize);
 		Assert.assertNotNull("silver medal 0 is not in space",
 				gigaSpace.read(silverMedal));
 	}
