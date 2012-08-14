@@ -22,6 +22,7 @@ package org.openspaces.eviction.test;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
@@ -55,7 +56,7 @@ public class FIFOSingleOrderTest extends AbstractClassBasedEvictionTest{
 	}
 
 	@Test
-	public void test1() throws Exception  {
+	public void priorityEvictionByOrderTest() throws Exception  {
 		logger.info("test 1 - assert fifo order");
 		logger.info("write low priority object");
 		gigaSpace.write(new BronzeMedal(0));
@@ -64,18 +65,18 @@ public class FIFOSingleOrderTest extends AbstractClassBasedEvictionTest{
 			gigaSpace.write(new GoldMedal(i));
 		}
 		logger.info("write another lower priority object");
-		gigaSpace.write(new BronzeMedal(cacheSize));
+		gigaSpace.write(new BronzeMedal(1));
 		logger.info("assert the first object was removed");
 		Assert.assertNull("BronzeMedal 0 was not evicted", gigaSpace.read(new BronzeMedal(0)));
-		logger.info("Test Passed 1");
+		logger.info("Test Passed");
 	}
 
 	@Test
-	public void test2() {
+	public void noneDoesNotEvictTest() {
 		logger.info("test 2 - assert only gold remains");
 
 		logger.info("fill the space with ten times cache size of different priority objects");
-		for (int i = 0; i < (cacheSize * 10); i++) {
+		for (int i = 0; i < cacheSize * 10; i++) {
 			if(i % 2 == 0)
 				gigaSpace.write(new GoldMedal(i));
 			else
@@ -90,11 +91,11 @@ public class FIFOSingleOrderTest extends AbstractClassBasedEvictionTest{
 				gigaSpace.count(new Object()) == gigaSpace.count(new GoldMedal()) + 1
 				|| gigaSpace.count(new Object()) == gigaSpace.count(new GoldMedal()));
 
-		logger.info("Test Passed 2");
+		logger.info("Test Passed");
 	}
 
 	@Test
-	public void test3() throws InterruptedException {
+	public void multiThreadedOperationsTest() throws InterruptedException {
 		logger.info("test 3 - multi threaded");
 		logger.info("fill the space with entries");		
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
@@ -103,7 +104,7 @@ public class FIFOSingleOrderTest extends AbstractClassBasedEvictionTest{
 
 				@Override
 				public void run() {
-					for (int i = 0; i < (cacheSize * 10); i++) {
+					for (int i = 0; i < cacheSize * 10; i++) {
 						if(i % 3 == 0)
 							gigaSpace.write(new GoldMedal(i));
 						else if (i % 3 == 1)
@@ -129,7 +130,7 @@ public class FIFOSingleOrderTest extends AbstractClassBasedEvictionTest{
 
 
 	@Test
-	public void test4() throws Exception  {
+	public void priorityOrderTest() throws Exception  {
 		logger.info("test 4 - fifo logics");
 		logger.info("write high priority object");
 		gigaSpace.write(new GoldMedal(0));
@@ -142,8 +143,8 @@ public class FIFOSingleOrderTest extends AbstractClassBasedEvictionTest{
 				gigaSpace.write(new BronzeMedal(i));
 		}
 
-		Assert.assertTrue("amount of objects in space is larger then cache size",
-				gigaSpace.count(new Object()) == cacheSize);
+		Assert.assertEquals("amount of objects in space is larger then cache size",
+				gigaSpace.count(new Object()), cacheSize);
 
 		logger.info("assert the original object is still in cache");
 		Assert.assertNotNull("gold medal 0 is not in space",
@@ -153,7 +154,7 @@ public class FIFOSingleOrderTest extends AbstractClassBasedEvictionTest{
 	}
 
 	@Test
-	public void test5() throws InterruptedException {
+	public void loadTest() throws InterruptedException {
 		logger.info("test 5 - load test");
 		logger.info("fill the space with entries");		
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
@@ -193,11 +194,50 @@ public class FIFOSingleOrderTest extends AbstractClassBasedEvictionTest{
 				gigaSpace.count(new GoldMedal()) > gigaSpace.count(new SilverMedal()) 
 				&& gigaSpace.count(new SilverMedal()) > gigaSpace.count(new BronzeMedal()));
 	}
+	
+	@Test
+	public void test8() throws InterruptedException {
+		logger.info("test 8 - fifo test");
+		logger.info("fill the space with double the cache size");		
+		final AtomicInteger id = new AtomicInteger(0);
+		final long start = System.currentTimeMillis();
+		final int minutes = 60;
+		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
+		for (int i = 0; i < NUM_OF_THREADS; i++) {
+			threadPool.execute(new Runnable() {
+
+				@Override
+				public void run() {
+					while(System.currentTimeMillis() - start < TimeUnit.MINUTES.toMillis(minutes)){
+						gigaSpace.write(new GoldMedal(id.getAndIncrement()));
+						gigaSpace.read(new BronzeMedal());
+						if(Math.random() < 0.5)
+							gigaSpace.take(new SilverMedal());
+						gigaSpace.write(new SilverMedal(id.getAndIncrement()));
+						gigaSpace.read(new GoldMedal());
+						if(Math.random() < 0.5)
+							gigaSpace.take(new BronzeMedal());
+						gigaSpace.write(new BronzeMedal(id.getAndIncrement()));
+						gigaSpace.read(new SilverMedal());
+						if(Math.random() < 0.5)
+							gigaSpace.take(new GoldMedal());
+					}
+				}
+			});
+		}
+		threadPool.shutdown();
+		threadPool.awaitTermination(minutes, TimeUnit.MINUTES);
+		Assert.assertTrue("more silver or bronze than gold",
+				gigaSpace.count(new GoldMedal()) > gigaSpace.count(new SilverMedal()) 
+				&& gigaSpace.count(new GoldMedal()) > gigaSpace.count(new BronzeMedal()));
+	}
 
 
 	@Test
 	public void test10() throws Exception  {
 		logger.info("test 10 - memory shortage");
+		logger.info("this test should only pass with a jvm heap size of 256MB");
+		
 		final int mega = 1 << 20;
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
 		for (int i = 0; i < NUM_OF_THREADS; i++)

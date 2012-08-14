@@ -22,6 +22,7 @@ package org.openspaces.eviction.test;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
@@ -37,81 +38,16 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:META-INF/spring/pu-lru.xml"})
-public class LRUSingleOrderTest extends AbstractClassBasedEvictionTest{
+public class LRUSingleOrderTest extends FIFOSingleOrderTest{
 
 	//mean trick
 	private static Logger logger = Logger.getLogger(new Object(){}.getClass().getEnclosingClass());
 
-	@Test
-	public void test1() throws Exception  {
-		logger.info("test 1 - assert lru order");
-		logger.info("write low priority object");
-		gigaSpace.write(new BronzeMedal(0));
-		logger.info("fill cache exactly with hight priority object");
-		for (int i = 1; i < cacheSize; i++) {
-			gigaSpace.write(new GoldMedal(i));
-		}
-		logger.info("write another lower priority object");
-		gigaSpace.write(new BronzeMedal(cacheSize));
-		logger.info("assert the first object was removed");
-		Assert.assertNull("BronzeMedal 0 was not evicted", gigaSpace.read(new BronzeMedal(0)));
-		logger.info("Test Passed 1");
-	}
 
-	@Test
-	public void test2() {
-		logger.info("test 2 - assert only gold remains");
-
-		logger.info("fill the space with ten times cache size of different priority objects");
-		for (int i = 0; i < cacheSize * 10; i++) {
-			if(i % 2 == 0)
-				gigaSpace.write(new GoldMedal(i));
-			else
-				gigaSpace.write(new SilverMedal(i));
-		}
-		Assert.assertTrue("amount of objects in space is larger then cache size",
-				gigaSpace.count(new Object()) == cacheSize);
-		//space will not evict an inserted object that calls to evict
-		//so if the last insert is not gold it will stay in space
-		logger.info("assert no more than one object of lower priority is in space");
-		Assert.assertTrue("not all objects in space are of the highest priority",
-				gigaSpace.count(new Object()) == gigaSpace.count(new GoldMedal()) + 1
-				|| gigaSpace.count(new Object()) == gigaSpace.count(new GoldMedal()));
-
-		logger.info("Test Passed 2");
-	}
-
-	@Test
-	public void test3() throws InterruptedException {
-		logger.info("test 3 - multi threaded");
-		logger.info("fill the space with entries");		
-		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
-		for (int i = 0; i < NUM_OF_THREADS; i++) {
-			threadPool.execute(new Runnable() {
-
-				@Override
-				public void run() {
-					for (int i = 0; i < (cacheSize * 10); i++) {
-						if(i % 3 == 0)
-							gigaSpace.write(new GoldMedal(i));
-						else if (i % 3 == 1)
-							gigaSpace.write(new SilverMedal(i));
-						else
-							gigaSpace.write(new BronzeMedal(i));
-					}
-				}
-			});
-		}
-		threadPool.shutdown();
-		threadPool.awaitTermination(60, TimeUnit.SECONDS);
-		logger.info("assert only objects only amount to cache size");		
-		Assert.assertTrue("amount of objects in space is larger then cache size",
-				gigaSpace.count(new Object()) == cacheSize);
-	}
 
 
 	@Test
-	public void test4() throws Exception  {
+	public void readKeepsAnObjectTest() throws Exception  {
 		logger.info("test 4 - lru logics");
 		logger.info("write an object");
 		gigaSpace.write(new SilverMedal(0));
@@ -123,15 +59,16 @@ public class LRUSingleOrderTest extends AbstractClassBasedEvictionTest{
 			else
 				gigaSpace.write(new SilverMedal(i));
 		}
-		Assert.assertTrue("amount of objects in space is larger then cache size",
-				gigaSpace.count(new Object()) == cacheSize);
+		Assert.assertEquals("amount of objects in space is larger then cache size",
+				gigaSpace.count(new Object()), cacheSize);
+		
 		logger.info("assert the original object is still in cache");
 		Assert.assertNotNull("silver medal 0 is not in space",
 				gigaSpace.read(new SilverMedal(0)));
 	}
 
 	@Test
-	public void test5() throws Exception  {
+	public void multiThreaded(){
 		logger.info("test 5 - lru logics");
 		logger.info("same as 4 but modify the object instead of read it");
 
@@ -216,10 +153,49 @@ public class LRUSingleOrderTest extends AbstractClassBasedEvictionTest{
 				&& gigaSpace.count(new SilverMedal()) > gigaSpace.count(new BronzeMedal()));
 	}
 
+	
+	@Test
+	public void test8() throws InterruptedException {
+		logger.info("test 8 - fifo test");
+		logger.info("fill the space with double the cache size");		
+		final AtomicInteger id = new AtomicInteger(0);
+		final long start = System.currentTimeMillis();
+		final int minutes = 60;
+		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
+		for (int i = 0; i < NUM_OF_THREADS; i++) {
+			threadPool.execute(new Runnable() {
+
+				@Override
+				public void run() {
+					while(System.currentTimeMillis() - start < TimeUnit.MINUTES.toMillis(minutes)){
+						gigaSpace.write(new GoldMedal(id.getAndIncrement()));
+						gigaSpace.read(new BronzeMedal());
+						if(Math.random() < 0.5)
+							gigaSpace.take(new SilverMedal());
+						gigaSpace.write(new SilverMedal(id.getAndIncrement()));
+						gigaSpace.read(new GoldMedal());
+						if(Math.random() < 0.5)
+							gigaSpace.take(new BronzeMedal());
+						gigaSpace.write(new BronzeMedal(id.getAndIncrement()));
+						gigaSpace.read(new SilverMedal());
+						if(Math.random() < 0.5)
+							gigaSpace.take(new GoldMedal());
+					}
+				}
+			});
+		}
+		threadPool.shutdown();
+		threadPool.awaitTermination(minutes, TimeUnit.MINUTES);
+		Assert.assertTrue("more silver or bronze than gold",
+				gigaSpace.count(new GoldMedal()) > gigaSpace.count(new SilverMedal()) 
+				&& gigaSpace.count(new GoldMedal()) > gigaSpace.count(new BronzeMedal()));
+	}
 
 	@Test
 	public void test10() throws Exception  {
 		logger.info("test 10 - memory shortage");
+		logger.info("this test should only pass with a jvm heap size of 256MB");
+		
 		final int mega = 1 << 20;
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
 		for (int i = 0; i < NUM_OF_THREADS; i++)
