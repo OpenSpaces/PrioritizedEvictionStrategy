@@ -87,5 +87,8 @@ public class LRUSingleOrderTest extends FIFOSingleOrderTest{
 				gigaSpace.count(new GoldMedal()) > gigaSpace.count(new SilverMedal()) 
 				&& gigaSpace.count(new GoldMedal()) > gigaSpace.count(new BronzeMedal()));
 	}
+	
+	@Override
+	protected void assertNextOneStillInSpace(int i){}
 
 }

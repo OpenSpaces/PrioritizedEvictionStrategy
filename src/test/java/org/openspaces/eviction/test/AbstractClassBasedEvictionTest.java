@@ -23,6 +23,8 @@ public abstract class AbstractClassBasedEvictionTest {
 	protected static final int ENTRY_NUM = 1000;
 	@Autowired
 	protected GigaSpace gigaSpace;
+
+
 	protected int cacheSize = 1000;
 	protected static Logger logger = Logger.getLogger(new Object(){}.getClass().getEnclosingClass());
 
@@ -37,6 +39,10 @@ public abstract class AbstractClassBasedEvictionTest {
 
 	public void setCacheSize(int cacheSize) {
 		this.cacheSize = cacheSize;
+	}
+
+	public void setGigaSpace(GigaSpace gigaSpace) {
+		this.gigaSpace = gigaSpace;
 	}
 
 	@Test
@@ -63,13 +69,36 @@ public abstract class AbstractClassBasedEvictionTest {
 	}
 
 	@Test
+	public void evictionbyFifoOrderTest() throws Exception  {
+		logger.info("write high priority object");
+		logger.info("fill the cache");
+
+		for (int i = 0; i < cacheSize; i++) {
+			gigaSpace.write(new BronzeMedal(i));
+		}
+		for (int i = 0; i < cacheSize; i++) {
+			gigaSpace.write(new SilverMedal(i));
+			Assert.assertNull("BronzeMedal " + i + " was not evicted from space", gigaSpace.read(new BronzeMedal(i)));
+			assertNextOneStillInSpace(i);
+		}
+
+		logger.info("Test Passed");
+
+	}
+
+	protected void assertNextOneStillInSpace(int i) {
+		if(i < cacheSize -1)
+			Assert.assertNotNull("BronzeMedal " + (i + 1) + " was evicted from space", gigaSpace.read(new BronzeMedal(i + 1)));
+	}
+
+	@Test
 	public void priorityOrderWriteMultiTest() throws Exception  {
 		logger.info("same as previous test only uses writeMultiple");
 		logger.info("write high priority object");
 		gigaSpace.write(new GoldMedal(0));
-		
+
 		logger.info("fill the cache with ten times its size of lower priority objects");
-		
+
 		Medal[] medals = new Medal[ENTRY_NUM/2];
 		for (int i = 0; i < cacheSize * 10; i += ENTRY_NUM/2) {
 			for (int j = i; j < ENTRY_NUM/2 + i; j++) {
@@ -80,16 +109,16 @@ public abstract class AbstractClassBasedEvictionTest {
 			}
 			gigaSpace.writeMultiple(medals);
 		}
-		
-		
+
+
 		Assert.assertEquals("amount of objects in space is larger than cache size",
 				gigaSpace.count(new Object()), cacheSize);
-		
+
 		logger.info("assert the original object is still in cache");
 		Assert.assertNotNull("gold medal 0 is not in space",
 				gigaSpace.read(new GoldMedal(0)));
 		logger.info("Test Passed");
-		
+
 	}
 
 	@Test
@@ -186,7 +215,7 @@ public abstract class AbstractClassBasedEvictionTest {
 		logger.info("Test Passed");
 	}
 
-	@Test
+	//	@Test
 	public void loadTest() throws InterruptedException {
 		logger.info("fill the space with double the cache size");		
 		final AtomicInteger id = new AtomicInteger(0);
@@ -223,7 +252,7 @@ public abstract class AbstractClassBasedEvictionTest {
 		logger.info("Test Passed");
 	}
 
-	@Test
+	//	@Test
 	public void loadMultiOperationsTest() throws InterruptedException {
 		logger.info("fill the space with double the cache size");		
 		final AtomicInteger id = new AtomicInteger(0);
@@ -262,13 +291,13 @@ public abstract class AbstractClassBasedEvictionTest {
 		threadPool.shutdown();
 		threadPool.awaitTermination((minutes * 60), TimeUnit.SECONDS);
 		Assert.assertTrue("more silver or bronze than gold, gold: " + gigaSpace.count(new GoldMedal()) + ", silver: " + gigaSpace.count(new SilverMedal())
-		+ ", bronze: " + gigaSpace.count(new BronzeMedal()),
+				+ ", bronze: " + gigaSpace.count(new BronzeMedal()),
 				gigaSpace.count(new GoldMedal()) > gigaSpace.count(new SilverMedal()) 
 				&& gigaSpace.count(new GoldMedal()) > gigaSpace.count(new BronzeMedal()));
 		logger.info("Test Passed");
 	}
 
-	@Test
+	//	@Test
 	public void memoryShortageTest() throws InterruptedException {
 		logger.info("memory shortage test");
 		logger.info("this test should only pass with a jvm heap size of 256MB");
