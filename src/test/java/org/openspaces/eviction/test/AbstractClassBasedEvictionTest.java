@@ -1,7 +1,13 @@
 package org.openspaces.eviction.test;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -16,6 +22,8 @@ import org.openspaces.eviction.data.GoldMedal;
 import org.openspaces.eviction.data.Medal;
 import org.openspaces.eviction.data.SilverMedal;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.j_spaces.core.MemoryShortageException;
 
 public abstract class AbstractClassBasedEvictionTest {
 
@@ -212,7 +220,7 @@ public abstract class AbstractClassBasedEvictionTest {
 	}
 
 	protected void assertAfterMultipleOperations() {
-		
+
 		int goldCount = gigaSpace.count(new GoldMedal());
 		int silverCount = gigaSpace.count(new SilverMedal());
 		int bronzeCount = gigaSpace.count(new BronzeMedal());
@@ -250,8 +258,8 @@ public abstract class AbstractClassBasedEvictionTest {
 				}
 			});
 		}
-		threadPool.shutdown();
 		threadPool.awaitTermination(minutes, TimeUnit.MINUTES);
+		threadPool.shutdownNow();
 		assertAfterMultipleOperations();
 		logger.info("Test Passed");
 	}
@@ -292,38 +300,57 @@ public abstract class AbstractClassBasedEvictionTest {
 				}
 			});
 		}
-		threadPool.shutdown();
 		threadPool.awaitTermination((minutes * 60), TimeUnit.SECONDS);
+		threadPool.shutdownNow();
 		assertAfterMultipleOperations();
 		logger.info("Test Passed");
 	}
 
 	@Test
-	public void memoryShortageTest() throws InterruptedException {
+	public void memoryShortageTest() throws InterruptedException, ExecutionException {
 		logger.info("memory shortage test");
-		logger.info("this test should only pass with a jvm heap size of 256MB");
 
-		final int mega = 1 << 20;
+		//int mega = 1 << 20;
+		long maxMemory = Runtime.getRuntime().maxMemory();
+		final int weight = (int) (maxMemory / cacheSize);
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
-		for (int i = 0; i < NUM_OF_THREADS; i++)
-			threadPool.execute(new Runnable(){			
+		List<Future<Boolean>> results = new ArrayList<Future<Boolean>>();
+		for (int i = 0; i < NUM_OF_THREADS; i++){
+			Future<Boolean> result = threadPool.submit(new Callable<Boolean>(){			
 				@Override
-				public void run() {
-					for(int i = 0; i < cacheSize * 10; i++){
-						Medal toWrite;	
-						if(i % 3 == 0)
-							toWrite = new GoldMedal(i);
-						else if (i % 3 == 1)
-							toWrite = new SilverMedal(i);
-						else
-							toWrite = new BronzeMedal(i);
-						toWrite.setWeight(new byte[mega]);
-						gigaSpace.write(toWrite);
-					}					
+				public Boolean call() throws InterruptedException {
+					boolean ans = false;
+						for(int i = 0; i < cacheSize * 2; i++){
+							try{
+							Medal toWrite;	
+							if(i % 3 == 0)
+								toWrite = new GoldMedal(i);
+							else if (i % 3 == 1)
+								toWrite = new SilverMedal(i);
+							else
+								toWrite = new BronzeMedal(i);
+							toWrite.setWeight(new byte[weight]);
+							gigaSpace.write(toWrite);
+							TimeUnit.MILLISECONDS.sleep(10);
+							}
+							catch(MemoryShortageException e){
+								ans = true;
+								continue;
+							}
+						}
+					return ans;					
 				}
 			});
-		threadPool.shutdown();
+			results.add(result);
+		}
 		threadPool.awaitTermination(60, TimeUnit.SECONDS);
+		threadPool.shutdownNow();
+		boolean gotShortage = false;
+		Iterator<Future<Boolean>> iterator = results.iterator();
+		while (iterator.hasNext() && !gotShortage) {
+			gotShortage |= iterator.next().get();
+		}
+		Assert.assertTrue("did not get memory shortage", gotShortage);
 		assertMemoryShortageTest();
 	}
 
