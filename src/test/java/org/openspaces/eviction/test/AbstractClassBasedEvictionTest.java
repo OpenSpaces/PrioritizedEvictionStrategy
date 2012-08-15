@@ -75,7 +75,7 @@ public abstract class AbstractClassBasedEvictionTest {
 	}
 
 	@Test
-	public void evictionbyFifoOrderTest() throws Exception  {
+	public void evictionByFifoOrderTest() throws Exception  {
 		logger.info("write high priority object");
 		logger.info("fill the cache");
 
@@ -224,14 +224,17 @@ public abstract class AbstractClassBasedEvictionTest {
 		int goldCount = gigaSpace.count(new GoldMedal());
 		int silverCount = gigaSpace.count(new SilverMedal());
 		int bronzeCount = gigaSpace.count(new BronzeMedal());
+		logger.info("gold: " + goldCount + ", silver: " + silverCount	+ ", bronze: " + bronzeCount);
 		Assert.assertTrue("more silver or bronze than gold, gold: " + goldCount + ", silver: " + silverCount
 				+ ", bronze: " + bronzeCount,
-				goldCount >= silverCount && goldCount >= bronzeCount);
+				goldCount >= silverCount && 
+				//since we do not evict entries that are written to full cache it is possible that up to NUM_OF_THREADS
+				//of lower priority would be written instead of higher priority entries
+				(silverCount + NUM_OF_THREADS) >= bronzeCount);
 	}
 
 	@Test
 	public void loadTest() throws InterruptedException {
-		logger.info("fill the space with double the cache size");		
 		final AtomicInteger id = new AtomicInteger(0);
 		final long start = System.currentTimeMillis();
 		final int minutes = 1;
@@ -281,26 +284,39 @@ public abstract class AbstractClassBasedEvictionTest {
 							switch(i % 3){
 							case 0:
 								medals[i] = new GoldMedal(id.getAndIncrement());
+								if(Math.random() < 0.25)
+									gigaSpace.takeMultiple(new GoldMedal(), ENTRY_NUM/2);
 								break;
 							case 1:
 								medals[i] = new SilverMedal(id.getAndIncrement());
+								if(Math.random() < 0.25)
+									gigaSpace.takeMultiple(new SilverMedal(), ENTRY_NUM/2);
 								break;
 							case 2:
 								medals[i] = new BronzeMedal(id.getAndIncrement());
+								if(Math.random() < 0.25)
+									gigaSpace.takeMultiple(new BronzeMedal(), ENTRY_NUM/2);
 								break;
 							}
 						}
 						gigaSpace.writeMultiple(medals);
 						gigaSpace.readMultiple(new Medal(), ENTRY_NUM/2);
-						if(Math.random() < 0.25)
-							gigaSpace.takeMultiple(new Medal(), ENTRY_NUM/2);
+						if(Math.random() < 0.1){
+							double take = Math.random();
+							if(take < 0.33)
+								gigaSpace.takeMultiple(new GoldMedal(), ENTRY_NUM/4);
+							else if(take < 0.66)
+								gigaSpace.takeMultiple(new SilverMedal(), ENTRY_NUM/4);
+							else
+								gigaSpace.takeMultiple(new BronzeMedal(), ENTRY_NUM/4);
+						}
 						if(Math.random() < 0.1)
 							id.set(id.intValue() / 2);
 					}
 				}
 			});
 		}
-		threadPool.awaitTermination((minutes * 60), TimeUnit.SECONDS);
+		threadPool.awaitTermination(minutes, TimeUnit.MINUTES);
 		threadPool.shutdownNow();
 		assertAfterMultipleOperations();
 		logger.info("Test Passed");
@@ -309,10 +325,9 @@ public abstract class AbstractClassBasedEvictionTest {
 	@Test
 	public void memoryShortageTest() throws InterruptedException, ExecutionException {
 		logger.info("memory shortage test");
-
-		//int mega = 1 << 20;
+		final AtomicInteger id = new AtomicInteger();
 		long maxMemory = Runtime.getRuntime().maxMemory();
-		final int weight = (int) (maxMemory / cacheSize);
+		final int weight = (int) (maxMemory  / cacheSize) ;
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
 		List<Future<Boolean>> results = new ArrayList<Future<Boolean>>();
 		for (int i = 0; i < NUM_OF_THREADS; i++){
@@ -320,31 +335,29 @@ public abstract class AbstractClassBasedEvictionTest {
 				@Override
 				public Boolean call() throws InterruptedException {
 					boolean ans = false;
-						for(int i = 0; i < cacheSize * 2; i++){
-							try{
+					for(int i = 0; i < cacheSize * 5; i++){
+						try{
 							Medal toWrite;	
 							if(i % 3 == 0)
-								toWrite = new GoldMedal(i);
+								toWrite = new GoldMedal(id.incrementAndGet());
 							else if (i % 3 == 1)
-								toWrite = new SilverMedal(i);
+								toWrite = new SilverMedal(id.incrementAndGet());
 							else
-								toWrite = new BronzeMedal(i);
-							toWrite.setWeight(new byte[weight]);
-							gigaSpace.write(toWrite);
-							TimeUnit.MILLISECONDS.sleep(10);
-							}
-							catch(MemoryShortageException e){
-								ans = true;
-								continue;
-							}
+								toWrite = new BronzeMedal(id.incrementAndGet());
+								toWrite.setWeight(new byte[weight]);
+								gigaSpace.write(toWrite);
 						}
+						catch(MemoryShortageException e){
+							ans = true;
+							continue;
+						}
+					}
 					return ans;					
 				}
 			});
-			results.add(result);
+							results.add(result);
 		}
 		threadPool.awaitTermination(60, TimeUnit.SECONDS);
-		threadPool.shutdownNow();
 		boolean gotShortage = false;
 		Iterator<Future<Boolean>> iterator = results.iterator();
 		while (iterator.hasNext() && !gotShortage) {
