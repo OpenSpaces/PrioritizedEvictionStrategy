@@ -23,8 +23,6 @@ public abstract class AbstractClassBasedEvictionTest {
 	protected static final int ENTRY_NUM = 1000;
 	@Autowired
 	protected GigaSpace gigaSpace;
-
-
 	protected int cacheSize = 1000;
 	protected static Logger logger = Logger.getLogger(new Object(){}.getClass().getEnclosingClass());
 
@@ -209,13 +207,21 @@ public abstract class AbstractClassBasedEvictionTest {
 		}
 		threadPool.shutdown();
 		threadPool.awaitTermination(1, TimeUnit.MINUTES);
-		Assert.assertTrue("more silver or bronze than gold",
-				gigaSpace.count(new GoldMedal()) > gigaSpace.count(new SilverMedal()) 
-				&& gigaSpace.count(new GoldMedal()) > gigaSpace.count(new BronzeMedal()));
+		assertAfterMultipleOperations();
 		logger.info("Test Passed");
 	}
 
-	//	@Test
+	protected void assertAfterMultipleOperations() {
+		
+		int goldCount = gigaSpace.count(new GoldMedal());
+		int silverCount = gigaSpace.count(new SilverMedal());
+		int bronzeCount = gigaSpace.count(new BronzeMedal());
+		Assert.assertTrue("more silver or bronze than gold, gold: " + goldCount + ", silver: " + silverCount
+				+ ", bronze: " + bronzeCount,
+				goldCount >= silverCount && goldCount >= bronzeCount);
+	}
+
+	@Test
 	public void loadTest() throws InterruptedException {
 		logger.info("fill the space with double the cache size");		
 		final AtomicInteger id = new AtomicInteger(0);
@@ -246,13 +252,11 @@ public abstract class AbstractClassBasedEvictionTest {
 		}
 		threadPool.shutdown();
 		threadPool.awaitTermination(minutes, TimeUnit.MINUTES);
-		Assert.assertTrue("more silver or bronze than gold",
-				gigaSpace.count(new GoldMedal()) > gigaSpace.count(new SilverMedal()) 
-				&& gigaSpace.count(new GoldMedal()) > gigaSpace.count(new BronzeMedal()));
+		assertAfterMultipleOperations();
 		logger.info("Test Passed");
 	}
 
-	//	@Test
+	@Test
 	public void loadMultiOperationsTest() throws InterruptedException {
 		logger.info("fill the space with double the cache size");		
 		final AtomicInteger id = new AtomicInteger(0);
@@ -282,7 +286,7 @@ public abstract class AbstractClassBasedEvictionTest {
 						gigaSpace.readMultiple(new Medal(), ENTRY_NUM/2);
 						if(Math.random() < 0.25)
 							gigaSpace.takeMultiple(new Medal(), ENTRY_NUM/2);
-						if(Math.random() < 0.025)
+						if(Math.random() < 0.1)
 							id.set(id.intValue() / 2);
 					}
 				}
@@ -290,14 +294,11 @@ public abstract class AbstractClassBasedEvictionTest {
 		}
 		threadPool.shutdown();
 		threadPool.awaitTermination((minutes * 60), TimeUnit.SECONDS);
-		Assert.assertTrue("more silver or bronze than gold, gold: " + gigaSpace.count(new GoldMedal()) + ", silver: " + gigaSpace.count(new SilverMedal())
-				+ ", bronze: " + gigaSpace.count(new BronzeMedal()),
-				gigaSpace.count(new GoldMedal()) > gigaSpace.count(new SilverMedal()) 
-				&& gigaSpace.count(new GoldMedal()) > gigaSpace.count(new BronzeMedal()));
+		assertAfterMultipleOperations();
 		logger.info("Test Passed");
 	}
 
-	//	@Test
+	@Test
 	public void memoryShortageTest() throws InterruptedException {
 		logger.info("memory shortage test");
 		logger.info("this test should only pass with a jvm heap size of 256MB");

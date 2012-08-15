@@ -1,11 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.openspaces</groupId>
-  <artifactId>PrioritizedEvictionStrategy</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <description>This project demonstrates the use of a custom eviction stategy, the eviction here is based on the objects' classes</description>
-  
-  	<properties>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.openspaces</groupId>
+	<artifactId>PrioritizedEvictionStrategy</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<description>This project demonstrates the use of a custom eviction stategy, the eviction here is based on the objects' classes</description>
+
+	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<gsVersion>9.1.0-m3-7491-274</gsVersion>
 	</properties>
@@ -15,16 +16,16 @@
 			<id>openspaces</id>
 			<url>http://maven-repository.openspaces.org</url>
 		</repository>
-	</repositories>  
-  
-  <dependencies>
-        	<dependency>
+	</repositories>
+
+	<dependencies>
+		<dependency>
 			<groupId>com.gigaspaces</groupId>
 			<artifactId>gs-openspaces</artifactId>
 			<version>${gsVersion}</version>
 			<scope>provided</scope>
 		</dependency>
-           	<dependency>
+		<dependency>
 			<groupId>com.gigaspaces</groupId>
 			<artifactId>gs-runtime</artifactId>
 			<version>${gsVersion}</version>
@@ -48,5 +49,5 @@
 			<version>1.2.17</version>
 			<scope>test</scope>
 		</dependency>
-  </dependencies>
+	</dependencies>
 </project>
