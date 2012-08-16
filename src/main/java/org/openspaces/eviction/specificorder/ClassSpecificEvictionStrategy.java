@@ -20,6 +20,7 @@ package org.openspaces.eviction.specificorder;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.logging.Level;
 
 import org.openspaces.eviction.AbstractClassBasedEvictionStrategy;
 import org.openspaces.eviction.OrderBy;
@@ -58,7 +59,8 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 
 		//handle priority value is first inserted to space
 		if(getPriorities().putIfAbsent(priority, new ConcurrentHashMap<Integer, EvictionStrategy>()) == null)
-			logger.finest("opened new priority listing for priority: " + getPriority(entry));
+			if(logger.isLoggable(Level.FINER))
+				logger.finer("opened new priority listing for priority: " + getPriority(entry));
 
 		//handle class type is first inserted to space
 		if(!getPriorities().get(priority).containsKey(classHash)){
@@ -66,19 +68,22 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 			case FIFO:
 				getPriorities().get(priority).putIfAbsent(
 						classHash, new ClassSpecificEvictionFIFOStrategy(getSpaceCacheInteractor(), getAmountInSpace()));
-				logger.finer("created new FIFO strategy for class " + 
+				if(logger.isLoggable(Level.FINER))
+					logger.finer("created new FIFO strategy for class " + 
 						entry.getSpaceTypeDescriptor().getObjectClass());
 				break;
 			case LRU:
-				getPriorities().get(priority).putIfAbsent(
+					getPriorities().get(priority).putIfAbsent(
 						classHash, new ClassSpecificEvictionLRUStrategy(getSpaceCacheInteractor(), getAmountInSpace()));
-				logger.finer("created new LRU strategy for class " + 
+					if(logger.isLoggable(Level.FINER))
+						logger.finer("created new LRU strategy for class " + 
 						entry.getSpaceTypeDescriptor().getObjectClass());
 				break;
 			case NONE:
 				getPriorities().get(priority).putIfAbsent(
 						classHash, new ClassSpecificEvictionNoneStrategy(getAmountInSpace()));
-				logger.finer("created new NONE strategy for class " + 
+				if(logger.isLoggable(Level.FINER))
+					logger.finer("created new NONE strategy for class " + 
 						entry.getSpaceTypeDescriptor().getObjectClass());
 			}
 		}

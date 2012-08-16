@@ -39,7 +39,7 @@ public abstract class AbstractClassBasedEvictionStrategy extends EvictionStrateg
 	protected Integer cacheSize;
 	protected AtomicLong amountInSpace;
 	protected static final Logger logger = Logger.getLogger(com.gigaspaces.logger.Constants.LOGGER_CACHE);
-
+	
 	public void init(SpaceCacheInteractor spaceCacheInteractor, Properties spaceProperties){
 		logger.config("started custom eviction strategy " + this.getClass().getSimpleName());
 		

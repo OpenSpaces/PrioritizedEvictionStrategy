@@ -3,6 +3,7 @@ package org.openspaces.eviction.singleorder;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.logging.Level;
 
 import org.openspaces.eviction.AbstractClassBasedEvictionStrategy;
 import org.openspaces.eviction.Index;
@@ -39,15 +40,16 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 		getAmountInSpace().incrementAndGet();
 	
 		//handle new priority value in space
-		if(getPriorities().putIfAbsent(getPriority(entry), new ConcurrentSkipListMap<IndexValue, EvictableServerEntry>())
-				== null)
-			logger.finest("opened new priority listing for priority: " + getPriority(entry));
+		if(getPriorities().putIfAbsent(getPriority(entry), new ConcurrentSkipListMap<IndexValue, EvictableServerEntry>()) == null)
+			if(logger.isLoggable(Level.FINER))
+				logger.finer("opened new priority listing for priority: " + getPriority(entry));
 	
 		IndexValue key = getIndex().incrementAndGet();
 		entry.setEvictionPayLoad(key);
 		getPriorities().get(getPriority(entry)).put(key, entry);
 	
-		logger.finest("insterted entry with UID: " + entry.getUID() +
+		if(logger.isLoggable(Level.FINEST))
+			logger.finest("insterted entry with UID: " + entry.getUID() +
 				" to prioirty " + getPriority(entry) + " and key index: " + key);
 		
 		//explicitly evict when there are more objects in space the the cache size
@@ -56,15 +58,17 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 			evict(diff);
 	}
 
-	public void onLoad(EvictableServerEntry entry) { 
-		logger.finest("loading entry with UID: " + entry.getUID() + " calling onInsert");
+	public void onLoad(EvictableServerEntry entry) {
+		if(logger.isLoggable(Level.FINEST))
+			logger.finest("loading entry with UID: " + entry.getUID() + " calling onInsert");
 		onInsert(entry);
 	}
 
 	public void remove(EvictableServerEntry entry) {
 		if(getPriorities().get(getPriority(entry)).remove(entry.getEvictionPayLoad()) == null)
 			throw new RuntimeException("entry " + entry + "should be in the queue");
-		logger.finest("removed entry with UID: " + entry.getUID() +
+		if(logger.isLoggable(Level.FINEST))
+			logger.finest("removed entry with UID: " + entry.getUID() +
 				", prioirty " + getPriority(entry) + " and key index: " + entry.getEvictionPayLoad());
 		
 		//keep track of number of objects in space
@@ -83,7 +87,8 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 				Iterator<EvictableServerEntry> iterator = priority.values().iterator();
 				while(iterator.hasNext() && counter < evictionQuota){
 					EvictableServerEntry next = iterator.next();
-					logger.finest("trying to evict entry with UID: " + next.getUID() +
+					if(logger.isLoggable(Level.FINEST))
+						logger.finest("trying to evict entry with UID: " + next.getUID() +
 							", prioirty " + getPriority(next) + " and key index: " + next.getEvictionPayLoad());
 					if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(next)){
 						counter++;
@@ -91,7 +96,8 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 				}
 	
 			}
-		logger.finest("got request to evict " + evictionQuota + " entries, evicted " + counter);
+		if(logger.isLoggable(Level.FINEST))
+			logger.finest("got request to evict " + evictionQuota + " entries, evicted " + counter);
 		return counter;
 	}
 

@@ -18,6 +18,8 @@
 package org.openspaces.eviction.singleorder;
 
 
+import java.util.logging.Level;
+
 import org.openspaces.eviction.IndexValue;
 
 import com.gigaspaces.server.eviction.EvictableServerEntry;
@@ -36,6 +38,10 @@ public class ClassBasedEvictionLRUStrategy extends ClassBasedEvictionFIFOStrateg
 		if(getPriorities().get(getPriority(entry)).remove(entry.getEvictionPayLoad(), entry)){
 			IndexValue key = getIndex().incrementAndGet();
 			getPriorities().get(getPriority(entry)).put(key, entry);
+			if(logger.isLoggable(Level.FINEST))
+				logger.finest("updated entry with UID: " + entry.getUID() +
+						" in prioirty " + getPriority(entry) + " with old key index: " +
+						entry.getEvictionPayLoad() + "to new key index: " + key);
 			entry.setEvictionPayLoad(key);
 		}
 	}
