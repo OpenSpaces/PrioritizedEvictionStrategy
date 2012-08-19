@@ -26,12 +26,9 @@
 		<os-core:properties>
 			<props>
 				<prop key="space-config.engine.cache_policy">2</prop>
-				<prop key="space-config.engine.eviction_strategy">org.openspaces.eviction.singleorder.ClassBasedEvictionFIFOStrategy</prop>
+				<prop key="space-config.engine.eviction_strategy">org.openspaces.eviction.specificorder.ClassSpecificEvictionStrategy
+				</prop>
 				<prop key="space-config.engine.cache_size">1000</prop>
-				<prop key="space-config.engine.memory_usage.high_watermark_percentage">50</prop>
-				<prop key="space-config.engine.memory_usage.write_only_block_percentage">50</prop>
-				<prop key="space-config.engine.memory_usage.write_only_check_percentage">50</prop>
-				<prop key="space-config.engine.memory_usage.low_watermark_percentage">50</prop>
 			</props>
 		</os-core:properties>
 	</os-core:space>

@@ -28,11 +28,14 @@ import org.junit.runner.RunWith;
 import org.openspaces.eviction.data.BronzeMedal;
 import org.openspaces.eviction.data.GoldMedal;
 import org.openspaces.eviction.data.SilverMedal;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:META-INF/spring/pu-fifo.xml"})
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 public class FIFOSingleOrderTest extends AbstractClassBasedEvictionTest{
 
 	//mean trick
