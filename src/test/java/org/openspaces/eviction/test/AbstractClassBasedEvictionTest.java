@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractClassBasedEvictionTest {
 
-	protected static final int NUM_OF_THREADS = 10;
+	protected static final int NUM_OF_THREADS = 30;
 	protected static final int ENTRY_NUM = 1000;
 	@Autowired
 	protected GigaSpace gigaSpace;
@@ -323,7 +323,7 @@ public abstract class AbstractClassBasedEvictionTest {
 		logger.info("Test Passed");
 	}
 
-	@Test
+	//@Test
 	public void memoryShortageTest() throws InterruptedException, ExecutionException {
 		logger.info("memory shortage test");
 		final AtomicInteger id = new AtomicInteger();
