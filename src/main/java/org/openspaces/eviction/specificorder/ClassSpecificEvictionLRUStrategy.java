@@ -18,6 +18,7 @@
 package org.openspaces.eviction.specificorder;
 
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
 
 import org.openspaces.eviction.IndexValue;
 
@@ -36,6 +37,8 @@ public class ClassSpecificEvictionLRUStrategy extends ClassSpecificEvictionFIFOS
 
 	public ClassSpecificEvictionLRUStrategy(SpaceCacheInteractor spaceCacheInteractor, AtomicLong amountInSpace) {
 		super(spaceCacheInteractor, amountInSpace);
+		if(logger.isLoggable(Level.CONFIG))
+			logger.config("instantiated new Class Specific Strategy: " + this.getClass().getName() + " " + this.hashCode());
 	}
 
 
@@ -56,6 +59,10 @@ public class ClassSpecificEvictionLRUStrategy extends ClassSpecificEvictionFIFOS
 			IndexValue key = getIndex().incrementAndGet();
 			getQueue().put(key, entry);
 			entry.setEvictionPayLoad(key);
+			if(logger.isLoggable(Level.FINEST))
+				logger.finest("updated entry with UID: " + entry.getUID() +
+						" in class " + entry.getSpaceTypeDescriptor().getClass() + " with old key index: " +
+						entry.getEvictionPayLoad() + " to new key index: " + key);
 		}
 	}
 

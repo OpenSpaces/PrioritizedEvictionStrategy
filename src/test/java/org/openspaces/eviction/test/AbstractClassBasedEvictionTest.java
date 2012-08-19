@@ -276,7 +276,7 @@ public abstract class AbstractClassBasedEvictionTest {
 
 	@Test
 	public void loadMultiOperationsTest() throws InterruptedException {
-		logger.info("fill the space with double the cache size");		
+		logger.info("fill the space with entries");		
 		final AtomicInteger id = new AtomicInteger(0);
 		final long start = System.currentTimeMillis();
 		final int minutes = 1;

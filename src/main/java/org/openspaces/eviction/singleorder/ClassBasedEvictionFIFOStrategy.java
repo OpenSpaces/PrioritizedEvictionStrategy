@@ -96,8 +96,10 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 				}
 	
 			}
+		
 		if(logger.isLoggable(Level.FINEST))
 			logger.finest("got request to evict " + evictionQuota + " entries, evicted " + counter);
+		
 		return counter;
 	}
 

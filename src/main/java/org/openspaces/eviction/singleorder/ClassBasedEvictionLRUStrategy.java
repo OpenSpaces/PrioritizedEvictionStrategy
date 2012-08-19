@@ -51,7 +51,7 @@ public class ClassBasedEvictionLRUStrategy extends ClassBasedEvictionFIFOStrateg
 			if(logger.isLoggable(Level.FINEST))
 				logger.finest("updated entry with UID: " + entry.getUID() +
 						" in prioirty " + getPriority(entry) + " with old key index: " +
-						entry.getEvictionPayLoad() + "to new key index: " + key);
+						entry.getEvictionPayLoad() + " to new key index: " + key);
 			entry.setEvictionPayLoad(key);
 		}
 	}

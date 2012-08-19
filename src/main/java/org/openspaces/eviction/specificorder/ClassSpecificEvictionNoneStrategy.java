@@ -18,6 +18,8 @@
 package org.openspaces.eviction.specificorder;
 
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.gigaspaces.server.eviction.EvictableServerEntry;
 import com.gigaspaces.server.eviction.EvictionStrategy;
@@ -31,10 +33,13 @@ import com.gigaspaces.server.eviction.EvictionStrategy;
  * @since 9.1.0
  */
 public class ClassSpecificEvictionNoneStrategy extends EvictionStrategy{
+	protected static final Logger logger = Logger.getLogger(com.gigaspaces.logger.Constants.LOGGER_CACHE);
 	private AtomicLong amountInSpace;
 	
 	public ClassSpecificEvictionNoneStrategy(AtomicLong amountInSpace) {
 		this.amountInSpace = amountInSpace;
+		if(logger.isLoggable(Level.CONFIG))
+			logger.config("instantiated new Class Specific None Strategy: " + this.hashCode());
 	}
 
 	public AtomicLong getAmountInSpace() {

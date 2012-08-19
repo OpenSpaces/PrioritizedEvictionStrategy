@@ -20,6 +20,8 @@ package org.openspaces.eviction.specificorder;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openspaces.eviction.Index;
 import org.openspaces.eviction.IndexValue;
@@ -41,12 +43,15 @@ public class ClassSpecificEvictionFIFOStrategy extends EvictionStrategy {
 	private ConcurrentSkipListMap<IndexValue, EvictableServerEntry> queue;
 	AtomicLong amountInSpace;
 	private Index index; 
+	protected static final Logger logger = Logger.getLogger(com.gigaspaces.logger.Constants.LOGGER_CACHE);
 
 	public ClassSpecificEvictionFIFOStrategy(SpaceCacheInteractor spaceCacheInteractor, AtomicLong amountInSpace) {
 		this.spaceCacheInteractor = spaceCacheInteractor;
-		this.queue= new  ConcurrentSkipListMap<IndexValue, EvictableServerEntry>();
+		this.queue= new ConcurrentSkipListMap<IndexValue, EvictableServerEntry>();
 		this.amountInSpace = amountInSpace;
 		this.index = new Index();
+		if(logger.isLoggable(Level.CONFIG))
+			logger.config("instantiated new Class Specific Strategy: " + this.getClass().getName() + " " + this.hashCode());
 	}
 
 	@Override
@@ -54,6 +59,9 @@ public class ClassSpecificEvictionFIFOStrategy extends EvictionStrategy {
 		IndexValue key = getIndex().incrementAndGet();
 		entry.setEvictionPayLoad(key);
 		getQueue().put(key, entry);
+		if(logger.isLoggable(Level.FINEST))
+			logger.finest("inserted entry with UID: " + entry.getUID() +
+					" in class " + entry.getSpaceTypeDescriptor().getClass() + " with key index: " + key);
 	}
 
 	@Override
@@ -66,6 +74,10 @@ public class ClassSpecificEvictionFIFOStrategy extends EvictionStrategy {
 		if(getQueue().remove(entry.getEvictionPayLoad()) == null)
 			throw new RuntimeException("entry " + entry + "should be in the queue");
 
+		if(logger.isLoggable(Level.FINEST))
+			logger.finest("removed entry with UID: " + entry.getUID() +
+					" in class " + entry.getSpaceTypeDescriptor().getClass() + " with key index: " + entry.getEvictionPayLoad());
+		
 		//keep track of number of objects in space
 		getAmountInSpace().decrementAndGet();
 	}
@@ -78,12 +90,19 @@ public class ClassSpecificEvictionFIFOStrategy extends EvictionStrategy {
 				&& counter < evictionQuota; i++) {
 			Iterator<EvictableServerEntry> iterator = getQueue().values().iterator();
 			while(iterator.hasNext() && counter < evictionQuota){
-				if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(
-						iterator.next())){
-					counter++;
+				EvictableServerEntry next = iterator.next();
+				if(logger.isLoggable(Level.FINEST))
+					logger.finest("trying to evict entry with UID: " + next.getUID() +
+						", in class " + next.getSpaceTypeDescriptor().getClass() + " and key index: " + next.getEvictionPayLoad());
+				if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(next)){
+					counter++;	
 				}
 			}
 		}
+		
+		if(logger.isLoggable(Level.FINEST))
+			logger.finest("got request to evict " + evictionQuota + " entries, evicted " + counter);
+		
 		return counter;
 	}
 
