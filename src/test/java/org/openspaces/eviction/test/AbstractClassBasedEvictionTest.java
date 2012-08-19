@@ -17,13 +17,12 @@ import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.openspaces.core.GigaSpace;
+import org.openspaces.core.SpaceMemoryShortageException;
 import org.openspaces.eviction.data.BronzeMedal;
 import org.openspaces.eviction.data.GoldMedal;
 import org.openspaces.eviction.data.Medal;
 import org.openspaces.eviction.data.SilverMedal;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.j_spaces.core.MemoryShortageException;
 
 public abstract class AbstractClassBasedEvictionTest {
 
@@ -65,7 +64,7 @@ public abstract class AbstractClassBasedEvictionTest {
 		}
 
 		Assert.assertEquals("amount of objects in space is larger than cache size",
-				gigaSpace.count(new Object()), cacheSize);
+				cacheSize, gigaSpace.count(new Object()));
 
 		logger.info("assert the original object is still in cache");
 		Assert.assertNotNull("gold medal 0 is not in space",
@@ -188,28 +187,30 @@ public abstract class AbstractClassBasedEvictionTest {
 
 				@Override
 				public void run() {
-					for (int i = 0; i < cacheSize * 10; i++) {
-						switch(i % 3){
-						case 0:
-							gigaSpace.write(new GoldMedal(i));
-							gigaSpace.read(new BronzeMedal());
-							if(Math.random() < 0.5)
-								gigaSpace.take(new SilverMedal());
-							break;
-						case 1:
-							gigaSpace.write(new SilverMedal(i));
-							gigaSpace.read(new GoldMedal());
-							if(Math.random() < 0.5)
-								gigaSpace.take(new BronzeMedal());
-							break;
-						case 2:
-							gigaSpace.write(new BronzeMedal(i));
-							gigaSpace.read(new SilverMedal());
-							if(Math.random() < 0.5)
-								gigaSpace.take(new GoldMedal());
-							break;
+					try{
+						for (int i = 0; i < cacheSize * 10; i++) {
+							switch(i % 3){
+							case 0:
+								gigaSpace.write(new GoldMedal(i));
+								gigaSpace.read(new BronzeMedal());
+								if(Math.random() < 0.5)
+									gigaSpace.take(new SilverMedal());
+								break;
+							case 1:
+								gigaSpace.write(new SilverMedal(i));
+								gigaSpace.read(new GoldMedal());
+								if(Math.random() < 0.5)
+									gigaSpace.take(new BronzeMedal());
+								break;
+							case 2:
+								gigaSpace.write(new BronzeMedal(i));
+								gigaSpace.read(new SilverMedal());
+								if(Math.random() < 0.5)
+									gigaSpace.take(new GoldMedal());
+								break;
+							}
 						}
-					}
+					}catch(SpaceMemoryShortageException e){}
 				}
 			});
 		}
@@ -233,7 +234,7 @@ public abstract class AbstractClassBasedEvictionTest {
 				(silverCount + NUM_OF_THREADS) >= bronzeCount);
 	}
 
-//	@Test
+	@Test
 	public void loadTest() throws InterruptedException {
 		final AtomicInteger id = new AtomicInteger(0);
 		final long start = System.currentTimeMillis();
@@ -261,13 +262,13 @@ public abstract class AbstractClassBasedEvictionTest {
 				}
 			});
 		}
+		threadPool.shutdown();
 		threadPool.awaitTermination(minutes, TimeUnit.MINUTES);
-		threadPool.shutdownNow();
 		assertAfterMultipleOperations();
 		logger.info("Test Passed");
 	}
 
-//	@Test
+	@Test
 	public void loadMultiOperationsTest() throws InterruptedException {
 		logger.info("fill the space with double the cache size");		
 		final AtomicInteger id = new AtomicInteger(0);
@@ -316,18 +317,20 @@ public abstract class AbstractClassBasedEvictionTest {
 				}
 			});
 		}
+		threadPool.shutdown();
 		threadPool.awaitTermination(minutes, TimeUnit.MINUTES);
-		threadPool.shutdownNow();
 		assertAfterMultipleOperations();
 		logger.info("Test Passed");
 	}
 
-//	@Test
-	public void memoryShortageTest() throws InterruptedException {
+	@Test
+	public void memoryShortageTest() throws InterruptedException, ExecutionException {
 		logger.info("memory shortage test");
 		final AtomicInteger id = new AtomicInteger();
 		long maxMemory = Runtime.getRuntime().maxMemory();
 		final int weight = (int) (maxMemory  / cacheSize) ;
+		final long start = System.currentTimeMillis();
+		final int minutes = 1;
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
 		List<Future<Boolean>> results = new ArrayList<Future<Boolean>>();
 		for (int i = 0; i < NUM_OF_THREADS; i++){
@@ -335,7 +338,8 @@ public abstract class AbstractClassBasedEvictionTest {
 				@Override
 				public Boolean call() {
 					boolean ans = false;
-					for(int i = 0; i < cacheSize * 5; i++){
+					int i = 0;
+					while(System.currentTimeMillis() - start < TimeUnit.MINUTES.toMillis(minutes)){
 						try{
 							Medal toWrite;	
 							if(i % 3 == 0)
@@ -344,10 +348,11 @@ public abstract class AbstractClassBasedEvictionTest {
 								toWrite = new SilverMedal(id.incrementAndGet());
 							else
 								toWrite = new BronzeMedal(id.incrementAndGet());
-								toWrite.setWeight(new byte[weight]);
-								gigaSpace.write(toWrite);
+							toWrite.setWeight(new byte[weight]);
+							gigaSpace.write(toWrite);
+							i++;
 						}
-						catch(MemoryShortageException e){
+						catch(SpaceMemoryShortageException e){
 							ans = true;
 							continue;
 						}
@@ -355,17 +360,14 @@ public abstract class AbstractClassBasedEvictionTest {
 					return ans;					
 				}
 			});
-							results.add(result);
+			results.add(result);
 		}
+		threadPool.shutdown();
 		threadPool.awaitTermination(60, TimeUnit.SECONDS);
 		boolean gotShortage = false;
 		Iterator<Future<Boolean>> iterator = results.iterator();
 		while (iterator.hasNext() && !gotShortage) {
-			try {
-				gotShortage |= iterator.next().get();
-			} catch (ExecutionException e) {
-				e.printStackTrace();
-			}
+			gotShortage |= iterator.next().get();
 		}
 		Assert.assertTrue("did not get memory shortage", gotShortage);
 		assertMemoryShortageTest();
