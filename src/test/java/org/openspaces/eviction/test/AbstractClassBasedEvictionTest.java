@@ -317,7 +317,7 @@ public abstract class AbstractClassBasedEvictionTest {
 		logger.info("Test Passed");
 	}
 
-	//@Test
+	@Test
 	public void memoryShortageTest() throws InterruptedException, ExecutionException {
 		logger.info("memory shortage test");
 		final AtomicInteger id = new AtomicInteger();
@@ -335,6 +335,7 @@ public abstract class AbstractClassBasedEvictionTest {
 					int i = 0;
 					while(System.currentTimeMillis() - start < TimeUnit.MINUTES.toMillis(minutes)){
 						try{
+							i++;
 							Medal toWrite;	
 							if(i % 3 == 0)
 								toWrite = new GoldMedal(id.incrementAndGet());
@@ -344,7 +345,6 @@ public abstract class AbstractClassBasedEvictionTest {
 								toWrite = new BronzeMedal(id.incrementAndGet());
 							toWrite.setWeight(new byte[weight]);
 							gigaSpace.write(toWrite);
-							i++;
 						}
 						catch(SpaceMemoryShortageException e){
 							ans = true;
@@ -357,7 +357,7 @@ public abstract class AbstractClassBasedEvictionTest {
 			results.add(result);
 		}
 		threadPool.shutdown();
-		threadPool.awaitTermination(60, TimeUnit.SECONDS);
+		threadPool.awaitTermination(minutes, TimeUnit.MINUTES);
 		boolean gotShortage = false;
 		Iterator<Future<Boolean>> iterator = results.iterator();
 		while (iterator.hasNext() && !gotShortage) {
