@@ -35,6 +35,16 @@ import com.gigaspaces.server.eviction.EvictableServerEntry;
 public class ClassBasedEvictionLRUStrategy extends ClassBasedEvictionFIFOStrategy {
 	
 	public void touchOnRead(EvictableServerEntry entry){
+		updateEntryIndex(entry);
+	}
+
+
+	public void touchOnModify(EvictableServerEntry entry){
+		updateEntryIndex(entry);
+	}
+
+	
+	protected void updateEntryIndex(EvictableServerEntry entry) {
 		if(getPriorities().get(getPriority(entry)).remove(entry.getEvictionPayLoad(), entry)){
 			IndexValue key = getIndex().incrementAndGet();
 			getPriorities().get(getPriority(entry)).put(key, entry);
@@ -47,8 +57,5 @@ public class ClassBasedEvictionLRUStrategy extends ClassBasedEvictionFIFOStrateg
 	}
 
 
-	public void touchOnModify(EvictableServerEntry entry){
-		touchOnRead(entry);
-	}
 
 }

@@ -41,6 +41,17 @@ public class ClassSpecificEvictionLRUStrategy extends ClassSpecificEvictionFIFOS
 
 	@Override
 	public void touchOnRead(EvictableServerEntry entry){
+		updateEntryIndex(entry);
+	}
+
+
+	@Override
+	public void touchOnModify(EvictableServerEntry entry){
+		updateEntryIndex(entry);
+	}
+
+	
+	protected void updateEntryIndex(EvictableServerEntry entry) {
 		if(getQueue().remove(entry.getEvictionPayLoad(), entry)){
 			IndexValue key = getIndex().incrementAndGet();
 			getQueue().put(key, entry);
@@ -48,10 +59,6 @@ public class ClassSpecificEvictionLRUStrategy extends ClassSpecificEvictionFIFOS
 		}
 	}
 
-	@Override
-	public void touchOnModify(EvictableServerEntry entry){
-		touchOnRead(entry);	
-	}
 
 	
 
