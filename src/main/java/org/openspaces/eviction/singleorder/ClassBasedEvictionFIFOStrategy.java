@@ -46,9 +46,6 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 	}
 
 	protected void add(EvictableServerEntry entry) {
-		//keep track of number of objects in space
-		getAmountInSpace().incrementAndGet();
-		
 		//handle new priority value in space
 		if(getPriorities().putIfAbsent(getPriority(entry), new ConcurrentSkipListMap<IndexValue, EvictableServerEntry>()) == null)
 			if(logger.isLoggable(Level.FINER))
@@ -61,11 +58,6 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 		if(logger.isLoggable(Level.FINEST))
 			logger.finest("insterted entry with UID: " + entry.getUID() +
 					" to prioirty " + getPriority(entry) + " and key index: " + key);
-		
-		//explicitly evict when there are more objects in space the the cache size
-		int diff = getAmountInSpace().intValue() - getEvictionConfig().getMaxCacheSize();
-		if(diff > 0)
-			evict(diff);
 	}
 
 	
@@ -77,9 +69,6 @@ public class ClassBasedEvictionFIFOStrategy extends AbstractClassBasedEvictionSt
 		if(logger.isLoggable(Level.FINEST))
 			logger.finest("removed entry with UID: " + entry.getUID() +
 				", prioirty " + getPriority(entry) + " and key index: " + entry.getEvictionPayLoad());
-		
-		//keep track of number of objects in space
-		getAmountInSpace().decrementAndGet();
 	}
 
 	@Override

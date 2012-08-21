@@ -19,7 +19,6 @@ package org.openspaces.eviction.specificorder;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +28,7 @@ import org.openspaces.eviction.IndexValue;
 import com.gigaspaces.server.eviction.EvictableServerEntry;
 import com.gigaspaces.server.eviction.SpaceEvictionManager;
 import com.gigaspaces.server.eviction.SpaceEvictionStrategy;
+import com.j_spaces.javax.cache.EvictionStrategy;
 
 /**
  * This is an extension of the {@link EvictionStrategy} class
@@ -40,15 +40,13 @@ import com.gigaspaces.server.eviction.SpaceEvictionStrategy;
  */
 public class ClassSpecificEvictionFIFOStrategy extends SpaceEvictionStrategy {
 	final private ConcurrentSkipListMap<IndexValue, EvictableServerEntry> queue;
-	final private AtomicLong amountInSpace;
 	final private Index index; 
 	final protected static Logger logger = Logger.getLogger(com.gigaspaces.logger.Constants.LOGGER_CACHE);
 
-	public ClassSpecificEvictionFIFOStrategy(SpaceEvictionManager evictionManager, AtomicLong amountInSpace) {
+	public ClassSpecificEvictionFIFOStrategy(SpaceEvictionManager evictionManager) {
 		super();
 		this.queue= new ConcurrentSkipListMap<IndexValue, EvictableServerEntry>();
 		this.index = new Index();
-		this.amountInSpace = amountInSpace;
 		if(logger.isLoggable(Level.CONFIG))
 			logger.config("instantiated new Class Specific Strategy: " + this.getClass().getName() + " " + this.hashCode());
 	}
@@ -84,9 +82,6 @@ public class ClassSpecificEvictionFIFOStrategy extends SpaceEvictionStrategy {
 		if(logger.isLoggable(Level.FINEST))
 			logger.finest("removed entry with UID: " + entry.getUID() +
 					" in class " + entry.getSpaceTypeDescriptor().getClass() + " with key index: " + entry.getEvictionPayLoad());
-		
-		//keep track of number of objects in space
-		getAmountInSpace().decrementAndGet();
 	}
 
 	@Override
@@ -119,9 +114,5 @@ public class ClassSpecificEvictionFIFOStrategy extends SpaceEvictionStrategy {
 
 	protected Index getIndex() {
 		return index;
-	}
-
-	protected AtomicLong getAmountInSpace() {
-		return this.amountInSpace;
 	}
 }

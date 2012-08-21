@@ -17,7 +17,6 @@
 
 package org.openspaces.eviction;
 
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,14 +33,8 @@ import com.gigaspaces.server.eviction.SpaceEvictionStrategyConfig;
  * @since 9.1.0
  */
 public abstract class AbstractClassBasedEvictionStrategy extends SpaceEvictionStrategy {
-	final protected AtomicLong amountInSpace;
 	protected static final Logger logger = Logger.getLogger(com.gigaspaces.logger.Constants.LOGGER_CACHE);
 
-	public AbstractClassBasedEvictionStrategy(){
-		super();
-		this.amountInSpace = new AtomicLong(0);
-	}
-	
 	public void initialize(SpaceEvictionManager evictionManager, SpaceEvictionStrategyConfig config){
 		super.initialize(evictionManager, config);
 		if(logger.isLoggable(Level.CONFIG))
@@ -61,8 +54,4 @@ public abstract class AbstractClassBasedEvictionStrategy extends SpaceEvictionSt
 				.getAnnotation(SpaceEvictionPriority.class).orderBy();
 	}
 
-	public AtomicLong getAmountInSpace() {
-		return amountInSpace;
-	}
-	
 }

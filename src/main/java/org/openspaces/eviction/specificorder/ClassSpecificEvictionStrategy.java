@@ -66,7 +66,7 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 		if(!getPriorities().get(priority).containsKey(classHash)){
 			switch(getOrderBy(entry)){
 			case FIFO:
-				ClassSpecificEvictionFIFOStrategy fifoStrategy = new ClassSpecificEvictionFIFOStrategy(getEvictionManager(), getAmountInSpace());
+				ClassSpecificEvictionFIFOStrategy fifoStrategy = new ClassSpecificEvictionFIFOStrategy(getEvictionManager());
 				fifoStrategy.initialize(getEvictionManager(), getEvictionConfig());
 				getPriorities().get(priority).putIfAbsent(classHash, fifoStrategy);
 				if(logger.isLoggable(Level.FINER))
@@ -74,7 +74,7 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 						entry.getSpaceTypeDescriptor().getObjectClass());
 				break;
 			case LRU:
-				ClassSpecificEvictionLRUStrategy lruStrategy = new ClassSpecificEvictionLRUStrategy(getEvictionManager(), getAmountInSpace());
+				ClassSpecificEvictionLRUStrategy lruStrategy = new ClassSpecificEvictionLRUStrategy(getEvictionManager());
 				lruStrategy.initialize(getEvictionManager(), getEvictionConfig());
 				getPriorities().get(priority).putIfAbsent(classHash, lruStrategy);
 					if(logger.isLoggable(Level.FINER))
@@ -82,8 +82,7 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 						entry.getSpaceTypeDescriptor().getObjectClass());
 				break;
 			case NONE:
-				getPriorities().get(priority).putIfAbsent(
-						classHash, new ClassSpecificEvictionNoneStrategy(getAmountInSpace()));
+				getPriorities().get(priority).putIfAbsent(classHash, new ClassSpecificEvictionNoneStrategy());
 				if(logger.isLoggable(Level.FINER))
 					logger.finer("created new NONE strategy for class " + 
 						entry.getSpaceTypeDescriptor().getObjectClass());
@@ -91,13 +90,6 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 		}
 
 			getSpecificStrategy(entry).onInsert(entry);
-			
-			//keep track of number of objects in space
-			getAmountInSpace().incrementAndGet();
-			
-			int diff = getAmountInSpace().intValue() - getEvictionConfig().getMaxCacheSize();
-			if(diff > 0)
-				evict(diff);
 	}
 
 	@Override

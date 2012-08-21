@@ -17,7 +17,6 @@
 
 package org.openspaces.eviction.specificorder;
 
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 
 import org.openspaces.eviction.IndexValue;
@@ -35,8 +34,8 @@ import com.gigaspaces.server.eviction.SpaceEvictionManager;
  */
 public class ClassSpecificEvictionLRUStrategy extends ClassSpecificEvictionFIFOStrategy{
 
-	public ClassSpecificEvictionLRUStrategy(SpaceEvictionManager evictionManager, AtomicLong amountInSpace) {
-		super(evictionManager, amountInSpace);
+	public ClassSpecificEvictionLRUStrategy(SpaceEvictionManager evictionManager) {
+		super(evictionManager);
 		if(logger.isLoggable(Level.CONFIG))
 			logger.config("instantiated new Class Specific Strategy: " + this.getClass().getName() + " " + this.hashCode());
 	}
