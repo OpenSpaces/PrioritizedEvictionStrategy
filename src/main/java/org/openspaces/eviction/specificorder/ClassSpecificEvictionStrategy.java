@@ -17,7 +17,6 @@
 
 package org.openspaces.eviction.specificorder;
 
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.logging.Level;
@@ -28,8 +27,9 @@ import org.openspaces.eviction.Priority;
 import org.openspaces.eviction.SpaceEvictionPriority;
 
 import com.gigaspaces.server.eviction.EvictableServerEntry;
-import com.gigaspaces.server.eviction.EvictionStrategy;
-import com.gigaspaces.server.eviction.SpaceCacheInteractor;
+import com.gigaspaces.server.eviction.SpaceEvictionManager;
+import com.gigaspaces.server.eviction.SpaceEvictionStrategy;
+import com.gigaspaces.server.eviction.SpaceEvictionStrategyConfig;
 
 /**
  * This class enables a class specific eviction mechanism
@@ -44,12 +44,12 @@ import com.gigaspaces.server.eviction.SpaceCacheInteractor;
  */
 public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStrategy{
 	public static final int MAX_THREADS = 100;
-	ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, EvictionStrategy>> priorities;
+	ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, SpaceEvictionStrategy>> priorities;
 	
 	@Override
-	public void init(SpaceCacheInteractor spaceCacheInteractor, Properties spaceProperties){
-		super.init(spaceCacheInteractor, spaceProperties);
-		priorities = new ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, EvictionStrategy>>();
+	public void initialize(SpaceEvictionManager evictionManager, SpaceEvictionStrategyConfig config){
+		super.initialize(evictionManager, config);
+		priorities = new ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, SpaceEvictionStrategy>>();
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 		Priority priority = getPriority(entry);
 
 		//handle priority value is first inserted to space
-		if(getPriorities().putIfAbsent(priority, new ConcurrentHashMap<Integer, EvictionStrategy>()) == null)
+		if(getPriorities().putIfAbsent(priority, new ConcurrentHashMap<Integer, SpaceEvictionStrategy>()) == null)
 			if(logger.isLoggable(Level.FINER))
 				logger.finer("opened new priority listing for priority: " + getPriority(entry));
 
@@ -66,15 +66,17 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 		if(!getPriorities().get(priority).containsKey(classHash)){
 			switch(getOrderBy(entry)){
 			case FIFO:
-				getPriorities().get(priority).putIfAbsent(
-						classHash, new ClassSpecificEvictionFIFOStrategy(getSpaceCacheInteractor(), getAmountInSpace()));
+				ClassSpecificEvictionFIFOStrategy fifoStrategy = new ClassSpecificEvictionFIFOStrategy(getEvictionManager(), getAmountInSpace());
+				fifoStrategy.initialize(getEvictionManager(), getEvictionConfig());
+				getPriorities().get(priority).putIfAbsent(classHash, fifoStrategy);
 				if(logger.isLoggable(Level.FINER))
 					logger.finer("created new FIFO strategy for class " + 
 						entry.getSpaceTypeDescriptor().getObjectClass());
 				break;
 			case LRU:
-					getPriorities().get(priority).putIfAbsent(
-						classHash, new ClassSpecificEvictionLRUStrategy(getSpaceCacheInteractor(), getAmountInSpace()));
+				ClassSpecificEvictionLRUStrategy lruStrategy = new ClassSpecificEvictionLRUStrategy(getEvictionManager(), getAmountInSpace());
+				lruStrategy.initialize(getEvictionManager(), getEvictionConfig());
+				getPriorities().get(priority).putIfAbsent(classHash, lruStrategy);
 					if(logger.isLoggable(Level.FINER))
 						logger.finer("created new LRU strategy for class " + 
 						entry.getSpaceTypeDescriptor().getObjectClass());
@@ -93,7 +95,7 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 			//keep track of number of objects in space
 			getAmountInSpace().incrementAndGet();
 			
-			int diff = getAmountInSpace().intValue() - getCacheSize();
+			int diff = getAmountInSpace().intValue() - getEvictionConfig().getMaxCacheSize();
 			if(diff > 0)
 				evict(diff);
 	}
@@ -104,18 +106,18 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 	}
 
 	@Override
-	public void touchOnRead(EvictableServerEntry entry){
-		getSpecificStrategy(entry).touchOnRead(entry);
+	public void onRead(EvictableServerEntry entry){
+		getSpecificStrategy(entry).onRead(entry);
 	}
 
 	@Override
-	public void touchOnModify(EvictableServerEntry entry){
-		getSpecificStrategy(entry).touchOnModify(entry);
+	public void onUpdate(EvictableServerEntry entry){
+		getSpecificStrategy(entry).onUpdate(entry);
 	}
 
 	@Override
-	public void remove(EvictableServerEntry entry){
-		getSpecificStrategy(entry).remove(entry);
+	public void onRemove(EvictableServerEntry entry){
+		getSpecificStrategy(entry).onRemove(entry);
 	}
 
 
@@ -123,12 +125,12 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 	public int evict(int evictionQuota){ 
 		int counter = 0;
 
-		for(ConcurrentHashMap<Integer, EvictionStrategy> priorityLevel : getPriorities().values()){
+		for(ConcurrentHashMap<Integer, SpaceEvictionStrategy> priorityLevel : getPriorities().values()){
 			if(counter == evictionQuota)
 				break;
 			if(priorityLevel.isEmpty())
 				continue;
-			for (EvictionStrategy strategy : priorityLevel.values()) {
+			for (SpaceEvictionStrategy strategy : priorityLevel.values()) {
 				counter += strategy.evict(evictionQuota - counter);
 				if(counter == evictionQuota)
 					break;
@@ -138,7 +140,7 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 	}
 
 
-	public ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, EvictionStrategy>> getPriorities() {
+	public ConcurrentSkipListMap<Priority, ConcurrentHashMap<Integer, SpaceEvictionStrategy>> getPriorities() {
 		return priorities;
 	}
 
@@ -146,7 +148,7 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 		return entry.getSpaceTypeDescriptor().getObjectClass().hashCode();
 	}
 	
-	protected EvictionStrategy getSpecificStrategy(EvictableServerEntry entry) {
+	protected SpaceEvictionStrategy getSpecificStrategy(EvictableServerEntry entry) {
 		return getPriorities().get(getPriority(entry)).get(getEntryClassHash(entry));
 	}
 

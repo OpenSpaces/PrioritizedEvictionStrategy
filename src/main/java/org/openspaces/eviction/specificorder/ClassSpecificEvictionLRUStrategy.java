@@ -23,7 +23,7 @@ import java.util.logging.Level;
 import org.openspaces.eviction.IndexValue;
 
 import com.gigaspaces.server.eviction.EvictableServerEntry;
-import com.gigaspaces.server.eviction.SpaceCacheInteractor;
+import com.gigaspaces.server.eviction.SpaceEvictionManager;
 
 /**
  * This is an extension of the {@link ClassSpecificEvictionFIFOStrategy} class
@@ -35,21 +35,23 @@ import com.gigaspaces.server.eviction.SpaceCacheInteractor;
  */
 public class ClassSpecificEvictionLRUStrategy extends ClassSpecificEvictionFIFOStrategy{
 
-	public ClassSpecificEvictionLRUStrategy(SpaceCacheInteractor spaceCacheInteractor, AtomicLong amountInSpace) {
-		super(spaceCacheInteractor, amountInSpace);
+	public ClassSpecificEvictionLRUStrategy(SpaceEvictionManager evictionManager, AtomicLong amountInSpace) {
+		super(evictionManager, amountInSpace);
 		if(logger.isLoggable(Level.CONFIG))
 			logger.config("instantiated new Class Specific Strategy: " + this.getClass().getName() + " " + this.hashCode());
 	}
 
 
 	@Override
-	public void touchOnRead(EvictableServerEntry entry){
+	public void onRead(EvictableServerEntry entry){
+		super.onRead(entry);
 		updateEntryIndex(entry);
 	}
 
 
 	@Override
-	public void touchOnModify(EvictableServerEntry entry){
+	public void onUpdate(EvictableServerEntry entry){
+		super.onUpdate(entry);
 		updateEntryIndex(entry);
 	}
 

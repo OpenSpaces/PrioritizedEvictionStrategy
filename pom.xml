@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -8,7 +9,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<gsVersion>9.1.0-m3-7491-892</gsVersion>
+		<gsVersion>9.1.0-m4-7493-107</gsVersion>
 	</properties>
 
 	<repositories>
@@ -50,6 +51,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<build>
 	<plugins>
 		<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
@@ -61,4 +63,5 @@
 			<version>2.3.2</version>
 		</plugin>
 	</plugins>
+	</build>
 </project>

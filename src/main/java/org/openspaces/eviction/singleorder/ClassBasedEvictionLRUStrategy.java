@@ -34,12 +34,16 @@ import com.gigaspaces.server.eviction.EvictableServerEntry;
  */
 public class ClassBasedEvictionLRUStrategy extends ClassBasedEvictionFIFOStrategy {
 	
-	public void touchOnRead(EvictableServerEntry entry){
+	@Override
+	public void onRead(EvictableServerEntry entry){
+		super.onRead(entry);
 		updateEntryIndex(entry);
 	}
 
 
-	public void touchOnModify(EvictableServerEntry entry){
+	@Override
+	public void onUpdate(EvictableServerEntry entry){
+		super.onUpdate(entry);
 		updateEntryIndex(entry);
 	}
 

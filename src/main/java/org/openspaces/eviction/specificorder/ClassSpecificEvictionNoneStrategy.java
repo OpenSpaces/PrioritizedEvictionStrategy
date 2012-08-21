@@ -22,7 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.gigaspaces.server.eviction.EvictableServerEntry;
-import com.gigaspaces.server.eviction.EvictionStrategy;
+import com.gigaspaces.server.eviction.SpaceEvictionStrategy;
 
 /**
  * This is an empty extension of the {@link EvictionStrategy} class
@@ -32,7 +32,7 @@ import com.gigaspaces.server.eviction.EvictionStrategy;
  * @author Sagi Bernstein
  * @since 9.1.0
  */
-public class ClassSpecificEvictionNoneStrategy extends EvictionStrategy{
+public class ClassSpecificEvictionNoneStrategy extends SpaceEvictionStrategy{
 	protected static final Logger logger = Logger.getLogger(com.gigaspaces.logger.Constants.LOGGER_CACHE);
 	private AtomicLong amountInSpace;
 	
@@ -47,9 +47,14 @@ public class ClassSpecificEvictionNoneStrategy extends EvictionStrategy{
 	}
 	
 	@Override
-	public void remove(EvictableServerEntry entry){
+	public void onRemove(EvictableServerEntry entry){
 		//keep track of number of objects in space
 		getAmountInSpace().decrementAndGet();
+	}
+
+	@Override
+	public int evict(int numOfEntries) {
+		return 0;
 	}
 
 }

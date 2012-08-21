@@ -27,8 +27,8 @@ import org.openspaces.eviction.Index;
 import org.openspaces.eviction.IndexValue;
 
 import com.gigaspaces.server.eviction.EvictableServerEntry;
-import com.gigaspaces.server.eviction.EvictionStrategy;
-import com.gigaspaces.server.eviction.SpaceCacheInteractor;
+import com.gigaspaces.server.eviction.SpaceEvictionManager;
+import com.gigaspaces.server.eviction.SpaceEvictionStrategy;
 
 /**
  * This is an extension of the {@link EvictionStrategy} class
@@ -38,24 +38,35 @@ import com.gigaspaces.server.eviction.SpaceCacheInteractor;
  * @author Sagi Bernstein
  * @since 9.1.0
  */
-public class ClassSpecificEvictionFIFOStrategy extends EvictionStrategy {
-	private SpaceCacheInteractor spaceCacheInteractor;
-	private ConcurrentSkipListMap<IndexValue, EvictableServerEntry> queue;
-	AtomicLong amountInSpace;
-	private Index index; 
-	protected static final Logger logger = Logger.getLogger(com.gigaspaces.logger.Constants.LOGGER_CACHE);
+public class ClassSpecificEvictionFIFOStrategy extends SpaceEvictionStrategy {
+	final private ConcurrentSkipListMap<IndexValue, EvictableServerEntry> queue;
+	final private AtomicLong amountInSpace;
+	final private Index index; 
+	final protected static Logger logger = Logger.getLogger(com.gigaspaces.logger.Constants.LOGGER_CACHE);
 
-	public ClassSpecificEvictionFIFOStrategy(SpaceCacheInteractor spaceCacheInteractor, AtomicLong amountInSpace) {
-		this.spaceCacheInteractor = spaceCacheInteractor;
+	public ClassSpecificEvictionFIFOStrategy(SpaceEvictionManager evictionManager, AtomicLong amountInSpace) {
+		super();
 		this.queue= new ConcurrentSkipListMap<IndexValue, EvictableServerEntry>();
-		this.amountInSpace = amountInSpace;
 		this.index = new Index();
+		this.amountInSpace = amountInSpace;
 		if(logger.isLoggable(Level.CONFIG))
 			logger.config("instantiated new Class Specific Strategy: " + this.getClass().getName() + " " + this.hashCode());
 	}
-
+	
 	@Override
 	public void onInsert(EvictableServerEntry entry){
+		super.onInsert(entry);
+		add(entry);
+	}
+
+	@Override
+	public void onLoad(EvictableServerEntry entry){
+		super.onLoad(entry);
+		add(entry);
+	}
+
+	
+	protected void add(EvictableServerEntry entry) {
 		IndexValue key = getIndex().incrementAndGet();
 		entry.setEvictionPayLoad(key);
 		getQueue().put(key, entry);
@@ -65,12 +76,8 @@ public class ClassSpecificEvictionFIFOStrategy extends EvictionStrategy {
 	}
 
 	@Override
-	public void onLoad(EvictableServerEntry entry){
-		onInsert(entry);
-	}
-
-	@Override
-	public void remove(EvictableServerEntry entry){
+	public void onRemove(EvictableServerEntry entry){
+		super.onRemove(entry);
 		if(getQueue().remove(entry.getEvictionPayLoad()) == null)
 			throw new RuntimeException("entry " + entry + "should be in the queue");
 
@@ -94,7 +101,7 @@ public class ClassSpecificEvictionFIFOStrategy extends EvictionStrategy {
 				if(logger.isLoggable(Level.FINEST))
 					logger.finest("trying to evict entry with UID: " + next.getUID() +
 						", in class " + next.getSpaceTypeDescriptor().getClass() + " and key index: " + next.getEvictionPayLoad());
-				if(getSpaceCacheInteractor().grantEvictionPermissionAndRemove(next)){
+				if(getEvictionManager().tryEvict(next)){
 					counter++;	
 				}
 			}
@@ -106,19 +113,15 @@ public class ClassSpecificEvictionFIFOStrategy extends EvictionStrategy {
 		return counter;
 	}
 
-	public SpaceCacheInteractor getSpaceCacheInteractor() {
-		return spaceCacheInteractor;
-	}
-
-	public ConcurrentSkipListMap<IndexValue, EvictableServerEntry> getQueue() {
+	protected ConcurrentSkipListMap<IndexValue, EvictableServerEntry> getQueue() {
 		return queue;
 	}
 
-	public Index getIndex() {
+	protected Index getIndex() {
 		return index;
 	}
 
-	public AtomicLong getAmountInSpace() {
+	protected AtomicLong getAmountInSpace() {
 		return this.amountInSpace;
 	}
 }
