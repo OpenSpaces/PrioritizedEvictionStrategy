@@ -28,7 +28,6 @@ import org.openspaces.eviction.IndexValue;
 import com.gigaspaces.server.eviction.EvictableServerEntry;
 import com.gigaspaces.server.eviction.SpaceEvictionManager;
 import com.gigaspaces.server.eviction.SpaceEvictionStrategy;
-import com.j_spaces.javax.cache.EvictionStrategy;
 
 /**
  * This is an extension of the {@link EvictionStrategy} class
