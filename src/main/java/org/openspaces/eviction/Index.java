@@ -27,27 +27,36 @@ import java.util.concurrent.atomic.AtomicLong;
  * @since 9.1.0
  */
 public class Index{
-	private long major;
+	private volatile long major;
 	private AtomicLong minor;
 	
 	public Index() {
-		this.major = 0l;
+		this.major = 0;
 		this.minor = new AtomicLong(0);
 		
 	}
 
 	public IndexValue incrementAndGet(){
+		long majorValue = getMajor(); 
 		long minorValue = getMinor().incrementAndGet();
 		
-		if(minorValue < 0)
+		if(minorValue < 0){
 			synchronized (this) {
 				if(getMinor().get() < 0){
-					return new IndexValue(this.major++, 0l);
+					getMinor().set(0);
+					this.major += 1;
+					return new IndexValue(getMajor(), 0l);
 				}
 			}
-		else return new IndexValue(getMajor(), minorValue);
-		//in the case the minor index was negative and upon entering the lock it 
-		//already is positive, we send this thread to have another go at getting the index
+		}
+		else{
+			long currentMajor = getMajor();
+			if(currentMajor == majorValue)
+				return new IndexValue(majorValue, minorValue);
+		}
+		//in the case the minor index was negative and upon entering the lock it
+		//already is positive, or in the case the major was switched
+		//we send this thread to have another go at getting the index
 		return incrementAndGet();
 	}
 
