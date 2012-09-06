@@ -123,7 +123,7 @@ public abstract class AbstractClassBasedEvictionTest {
 
 
 		Assert.assertEquals("amount of objects in space is larger than cache size",
-				gigaSpace.count(new Object()), cacheSize);
+				cacheSize, gigaSpace.count(new Object()));
 
 		logger.info("assert the original object is still in cache");
 		Assert.assertNotNull("gold medal 0 is not in space",
@@ -318,7 +318,7 @@ public abstract class AbstractClassBasedEvictionTest {
 			});
 		}
 		threadPool.shutdown();
-		threadPool.awaitTermination(minutes, TimeUnit.MINUTES);
+		threadPool.awaitTermination(minutes + 1, TimeUnit.MINUTES);
 		assertAfterMultipleOperations();
 		logger.info("Test Passed");
 	}

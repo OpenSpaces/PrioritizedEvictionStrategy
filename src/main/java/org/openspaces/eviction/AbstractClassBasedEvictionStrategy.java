@@ -37,8 +37,8 @@ public abstract class AbstractClassBasedEvictionStrategy extends SpaceEvictionSt
 
 	public void initialize(SpaceEvictionManager evictionManager, SpaceEvictionStrategyConfig config){
 		super.initialize(evictionManager, config);
-		if(logger.isLoggable(Level.CONFIG))
-			logger.config("started custom eviction strategy " + this.getClass().getSimpleName());
+		if(logger.isLoggable(Level.INFO))
+			logger.info("started custom eviction strategy " + this.getClass().getName());
 	}
 	
 	protected Priority getPriority(EvictableServerEntry entry) {
