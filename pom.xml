@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openspaces</groupId>
 	<artifactId>PrioritizedEvictionStrategy</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<description>This project demonstrates the use of a custom eviction strategy, the eviction here is based on the objects' classes</description>
 
 	<properties>
