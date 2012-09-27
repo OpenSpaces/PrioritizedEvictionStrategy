@@ -176,7 +176,7 @@ public abstract class AbstractClassBasedEvictionTest {
 		}
 		threadPool.shutdown();
 		threadPool.awaitTermination(60, TimeUnit.SECONDS);
-		logger.info("assert only objects only amount to cache size");		
+		logger.info("assert objects only amount to cache size");		
 		assertCacheSizeEqualsCountInSpace();
 		assertMultiThreadedOperationsTest();
 		logger.info("Test Passed");

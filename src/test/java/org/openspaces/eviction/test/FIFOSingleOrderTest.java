@@ -66,8 +66,8 @@ public class FIFOSingleOrderTest extends AbstractClassBasedEvictionTest{
 
 	protected void assertMultiThreadedOperationsTest() {
 		Assert.assertTrue("more silver than gold or more bronze than silver", 
-				gigaSpace.count(new GoldMedal()) > gigaSpace.count(new SilverMedal()) 
-				&& gigaSpace.count(new SilverMedal()) > gigaSpace.count(new BronzeMedal()));
+				gigaSpace.count(new GoldMedal()) >= gigaSpace.count(new SilverMedal()) 
+				&& gigaSpace.count(new SilverMedal()) >= gigaSpace.count(new BronzeMedal()));
 	}
 
 	protected void assertMemoryShortageTest() {
