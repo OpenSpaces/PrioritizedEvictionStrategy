@@ -21,8 +21,8 @@
 	<!-- Enables the usage of @GigaSpaceContext annotation based injection. -->
 	<os-core:giga-space-context />
 
-	<os-core:space id="space" url="/./mySpace?groups=EvictionStrategyTest"
-		schema="persistent" mirror="true" external-data-source="dataSource">
+	<os-core:space id="space" url="/./mySpace" schema="persistent" lookup-groups="EvictionStrategyTest"
+		mirror="true" external-data-source="dataSource">
 		<os-core:custom-cache-policy size="5" initial-load-percentage="20"
 			space-eviction-strategy="classBasedEvictionLRUStrategy"/>
 		<os-core:properties>
