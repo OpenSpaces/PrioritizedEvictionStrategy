@@ -31,7 +31,6 @@ public class Medal {
 	Integer id;
 	String winnerName;
 	double diameter;
-	@Embedded
 	Payload weight;
 	String sport;
 	String contest;
@@ -72,7 +71,7 @@ public class Medal {
 		this.diameter = diameter;
 	}
 
-
+	@Embedded
 	public Payload getWeight() {
 		return weight;
 	}
