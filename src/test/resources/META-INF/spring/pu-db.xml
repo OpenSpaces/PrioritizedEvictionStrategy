@@ -58,11 +58,11 @@
 	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
 	    <property name="dataSource" ref="dataSource"/>
 	    <property name="annotatedClasses">
-            <list>
+            <array>
                 <value>org.openspaces.eviction.test.db.data.DataEntryP0</value>
                 <value>org.openspaces.eviction.test.db.data.DataEntryP1</value>
                 <value>org.openspaces.eviction.test.db.data.DataEntryP2</value>
-            </list>
+            </array>
         </property>
 	    <property name="hibernateProperties">
             <props>

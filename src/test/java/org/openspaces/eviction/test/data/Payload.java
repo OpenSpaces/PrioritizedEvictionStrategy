@@ -1,9 +1,7 @@
 package org.openspaces.eviction.test.data;
 
 
-//@Embeddable
 public class Payload {
-	//@Id
 	private Integer id;
 	private byte[] payload;
 	

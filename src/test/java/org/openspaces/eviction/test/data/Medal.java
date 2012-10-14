@@ -22,7 +22,6 @@ import com.gigaspaces.annotation.pojo.SpaceId;
 
 @SpaceClass
 public class Medal {
-	//@Id
 	private Integer id;
 	private String winnerName;
 	private double diameter;
