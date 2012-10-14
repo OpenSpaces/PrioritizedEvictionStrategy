@@ -1,5 +1,7 @@
 package org.openspaces.test.db.data;
 
+import java.io.Serializable;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -12,7 +14,9 @@ import com.gigaspaces.annotation.pojo.SpaceId;
 @SpaceEvictionPriority(priority = 0, orderBy = OrderBy.LRU)
 @SpaceClass
 @Entity
-public class DataEntry {
+public class DataEntry implements Serializable{
+	private static final long serialVersionUID = 7584368569212146521L;
+
 	@Id
 	private Integer id;
 	private	String payload;

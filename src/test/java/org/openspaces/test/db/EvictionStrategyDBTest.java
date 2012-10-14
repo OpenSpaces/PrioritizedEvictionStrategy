@@ -46,6 +46,7 @@ public class EvictionStrategyDBTest {
 	
 	@Test
 	public void readFromDBTest(){
+		logger.info("started test");		
 		for (int i = 0; i < CACHE_MAX_SIZE + 1; i++) {
 			gigaSpace.write(new DataEntry(i));
 		}
