@@ -20,6 +20,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:META-INF/spring/pu-db.xml"})
@@ -35,6 +36,7 @@ public class EvictionStrategyDBTest {
 
 	@BeforeClass
 	public static  void callGC() {
+		
 		System.gc();
 	}
 
@@ -49,6 +51,7 @@ public class EvictionStrategyDBTest {
 			gigaSpace.write(new BronzeMedal(i));
 		}
 		Assert.assertNotNull(gigaSpace.read(new BronzeMedal(0)));
+		
 	}
 
 	//@Test
