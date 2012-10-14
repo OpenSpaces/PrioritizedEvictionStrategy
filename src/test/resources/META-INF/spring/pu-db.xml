@@ -39,7 +39,7 @@
 	<os-core:giga-space id="gigaSpace" space="space" />
 
 	<bean id="classSpecificEvictionStrategy" 
-		class="org.openspaces.eviction.singleorder.ClassSpecificEvictionStrategy"/>
+		class="org.openspaces.eviction.specificorder.ClassSpecificEvictionStrategy"/>
 	
 	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
      	<property name="driverClassName" value="com.mysql.jdbc.Driver"/>

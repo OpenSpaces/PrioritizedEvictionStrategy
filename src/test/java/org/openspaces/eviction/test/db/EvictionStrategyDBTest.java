@@ -29,7 +29,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class EvictionStrategyDBTest {
 	protected static final int NUM_OF_THREADS = 30;
 	protected static final int ENTRY_NUM = 20;
-	private static final long RUNNING_TIME = 1;
+	private static final long RUNNING_TIME = 5;
 	@Autowired
 	protected GigaSpace gigaSpace;
 	protected int CACHE_MAX_SIZE = 5;
@@ -37,7 +37,7 @@ public class EvictionStrategyDBTest {
 
 	@BeforeClass
 	public static  void callGC() {
-		
+
 		System.gc();
 	}
 
@@ -45,7 +45,7 @@ public class EvictionStrategyDBTest {
 	public void cleanSpace() {
 		gigaSpace.clear(new Object());
 	}
-	
+
 	@Test
 	public void readFromDBTest(){
 		logger.info("started simple db test");		
@@ -82,7 +82,7 @@ public class EvictionStrategyDBTest {
 
 				@Override
 				public void run(){
-					int i = ((int)Math.random() * ENTRY_NUM);
+					int i = (int)(Math.random() * ENTRY_NUM);
 					switch(i % 3){
 					case 0:
 						gigaSpace.write(new DataEntryPriorityA(i));
@@ -102,7 +102,7 @@ public class EvictionStrategyDBTest {
 						if(Math.random() < 0.5)
 							gigaSpace.take(new DataEntryPriorityA(i));
 						break;
-				}
+					}
 				}
 			}, 0, 10, TimeUnit.MILLISECONDS);
 			futuresList.add(scheduleWithFixedDelay);
