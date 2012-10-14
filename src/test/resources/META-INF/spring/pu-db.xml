@@ -59,11 +59,9 @@
 	    <property name="dataSource" ref="dataSource"/>
 	    <property name="annotatedClasses">
             <list>
-                <value>org.openspaces.eviction.test.data.Medal</value>
-                <value>org.openspaces.eviction.test.data.BronzeMedal</value>
-                <value>org.openspaces.eviction.test.data.SilverMedal</value>
-                <value>org.openspaces.eviction.test.data.GoldMedal</value>
-                <value>org.openspaces.eviction.test.data.Payload</value>
+                <value>org.openspaces.eviction.test.db.data.DataEntryP0</value>
+                <value>org.openspaces.eviction.test.db.data.DataEntryP1</value>
+                <value>org.openspaces.eviction.test.db.data.DataEntryP2</value>
             </list>
         </property>
 	    <property name="hibernateProperties">

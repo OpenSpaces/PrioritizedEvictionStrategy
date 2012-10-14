@@ -1,12 +1,9 @@
 package org.openspaces.eviction.test.data;
 
-import javax.persistence.Embeddable;
-import javax.persistence.Id;
 
-
-@Embeddable
+//@Embeddable
 public class Payload {
-	@Id
+	//@Id
 	private Integer id;
 	private byte[] payload;
 	

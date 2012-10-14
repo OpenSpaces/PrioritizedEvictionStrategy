@@ -17,25 +17,16 @@
 
 package org.openspaces.eviction.test.data;
 
-import java.io.Serializable;
-
-import javax.persistence.Embedded;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
-
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
 
 @SpaceClass
-public class Medal implements Serializable {
-	private static final long serialVersionUID = -5787064331155789837L;
-
-	@Id
+public class Medal {
+	//@Id
 	private Integer id;
-	@Embedded
-	private Payload weight;
 	private String winnerName;
 	private double diameter;
+	private Payload weight;
 	private String sport;
 	private String contest;
 	
@@ -75,7 +66,7 @@ public class Medal implements Serializable {
 		this.diameter = diameter;
 	}
 
-	@OneToOne
+
 	public Payload getWeight() {
 		return weight;
 	}

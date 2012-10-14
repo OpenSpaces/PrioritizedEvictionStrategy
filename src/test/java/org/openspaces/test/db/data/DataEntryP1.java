@@ -5,26 +5,29 @@ import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import org.openspaces.eviction.OrderBy;
+import org.openspaces.eviction.SpaceEvictionPriority;
+
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
-
+@SpaceEvictionPriority(priority = 1, orderBy = OrderBy.LRU)
 @SpaceClass
 @Entity
-public class DataEntry implements Serializable{
+public class DataEntryP1 implements Serializable{
 	private static final long serialVersionUID = 7584368569212146521L;
 
 	@Id
 	private Integer id;
 	private	String payload;
 	
-	public DataEntry(){}
+	public DataEntryP1(){}
 	
-	public DataEntry(Integer id) {
+	public DataEntryP1(Integer id) {
 		super();
 		this.id = id;
 	}
 
-	public DataEntry(Integer id, String payload) {
+	public DataEntryP1(Integer id, String payload) {
 		super();
 		this.id = id;
 		this.payload = payload;
