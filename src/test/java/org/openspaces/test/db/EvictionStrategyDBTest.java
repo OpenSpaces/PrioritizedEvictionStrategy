@@ -48,7 +48,7 @@ public class EvictionStrategyDBTest {
 		for (int i = 0; i < CACHE_MAX_SIZE + 1; i++) {
 			gigaSpace.write(new BronzeMedal(i));
 		}
-		Assert.assertNotNull(gigaSpace.read(new BronzeMedal(CACHE_MAX_SIZE + 1)));
+		Assert.assertNotNull(gigaSpace.read(new BronzeMedal(0)));
 	}
 
 	//@Test

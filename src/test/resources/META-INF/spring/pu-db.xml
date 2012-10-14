@@ -22,7 +22,7 @@
 	<os-core:giga-space-context />
 
 	<os-core:space id="space" url="/./mySpace" schema="persistent" lookup-groups="EvictionStrategyTest"
-		mirror="true" external-data-source="dataSource">
+		mirror="true" external-data-source="hibernateDataSource">
 		<os-core:custom-cache-policy size="5" initial-load-percentage="20"
 			space-eviction-strategy="classBasedEvictionLRUStrategy"/>
 		<os-core:properties>
@@ -49,6 +49,11 @@
         <property name="maxActive" value="100"/>
         <property name="initialSize" value="10"/>
     	</bean>
+    	
+    <bean id="hibernateDataSource"
+		class="org.openspaces.persistency.hibernate.DefaultHibernateExternalDataSource">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
 
 	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
 	    <property name="dataSource" ref="dataSource"/>
