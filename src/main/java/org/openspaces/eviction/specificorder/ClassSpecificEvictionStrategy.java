@@ -94,7 +94,7 @@ public class ClassSpecificEvictionStrategy extends AbstractClassBasedEvictionStr
 
 	@Override
 	public void onLoad(EvictableServerEntry entry){ 
-		getSpecificStrategy(entry).onLoad(entry);
+		onInsert(entry);
 	}
 
 	@Override
