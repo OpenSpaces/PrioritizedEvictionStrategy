@@ -14,7 +14,7 @@ import com.gigaspaces.annotation.pojo.SpaceId;
 @SpaceClass
 @Entity
 public class DataEntryP2 implements Serializable{
-	private static final long serialVersionUID = 7584368569212146521L;
+	private static final long serialVersionUID = 943615943974723455L;
 
 	@Id
 	private Integer id;
