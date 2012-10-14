@@ -17,6 +17,7 @@
 
 package org.openspaces.eviction.test.data;
 
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -30,8 +31,8 @@ public class Medal {
 	Integer id;
 	String winnerName;
 	double diameter;
-/*	@Transient
-	Object weight;*/
+	@Embedded
+	Payload weight;
 	String sport;
 	String contest;
 	
@@ -72,13 +73,13 @@ public class Medal {
 	}
 
 
-/*	public Object getWeight() {
+	public Payload getWeight() {
 		return weight;
 	}
 
-	public void setWeight(Object weight) {
+	public void setWeight(Payload weight) {
 		this.weight = weight;
-	}*/
+	}
 
 	public String getSport() {
 		return sport;
