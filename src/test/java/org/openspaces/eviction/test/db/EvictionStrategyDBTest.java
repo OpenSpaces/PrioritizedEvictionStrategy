@@ -70,6 +70,11 @@ public class EvictionStrategyDBTest {
 	@Test
 	public void multiThreadedMultiOperationsTest() throws InterruptedException {
 		logger.info("fill the space with entries");		
+		for (int i = 0; i < CACHE_MAX_SIZE + 1; i++) {
+			gigaSpace.write(new DataEntryPriorityA(i));
+			gigaSpace.write(new DataEntryPriorityB(i));
+			gigaSpace.write(new DataEntryPriorityC(i));
+		}
 		ScheduledExecutorService threadPool = Executors.newScheduledThreadPool(NUM_OF_THREADS);
 		List<ScheduledFuture<?>> futuresList = new ArrayList<ScheduledFuture<?>>();
 		for (int i = 0; i < NUM_OF_THREADS; i++) {
@@ -81,21 +86,21 @@ public class EvictionStrategyDBTest {
 					switch(i % 3){
 					case 0:
 						gigaSpace.write(new DataEntryPriorityA(i));
-						gigaSpace.read(new DataEntryPriorityC());
+						gigaSpace.read(new DataEntryPriorityC(i));
 						if(Math.random() < 0.5)
-							gigaSpace.take(new DataEntryPriorityB());
+							gigaSpace.take(new DataEntryPriorityB(i));
 						break;
 					case 1:
 						gigaSpace.write(new DataEntryPriorityB(i));
-						gigaSpace.read(new DataEntryPriorityA());
+						gigaSpace.read(new DataEntryPriorityA(i));
 						if(Math.random() < 0.5)
-							gigaSpace.take(new DataEntryPriorityC());
+							gigaSpace.take(new DataEntryPriorityC(i));
 						break;
 					case 2:
 						gigaSpace.write(new DataEntryPriorityC(i));
-						gigaSpace.read(new DataEntryPriorityB());
+						gigaSpace.read(new DataEntryPriorityB(i));
 						if(Math.random() < 0.5)
-							gigaSpace.take(new DataEntryPriorityA());
+							gigaSpace.take(new DataEntryPriorityA(i));
 						break;
 				}
 				}
