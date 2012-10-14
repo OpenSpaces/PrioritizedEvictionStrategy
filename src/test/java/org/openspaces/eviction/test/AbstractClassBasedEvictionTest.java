@@ -39,7 +39,7 @@ public abstract class AbstractClassBasedEvictionTest {
 	public static  void callGC() {
 		System.gc();
 	}
-	
+
 	@Before
 	public void cleanSpace() {
 		gigaSpace.clear(new Object());
@@ -156,11 +156,12 @@ public abstract class AbstractClassBasedEvictionTest {
 	protected abstract void assertCacheSizeEqualsCountInSpace();
 
 	@Test
-	public void multiThreadedOperationsTest() throws InterruptedException {
+	public void multiThreadedOperationsTest() throws InterruptedException, ExecutionException {
 		logger.info("fill the space with entries");		
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
+		List<Future<?>> futures = new ArrayList<Future<?>>();
 		for (int i = 0; i < NUM_OF_THREADS; i++) {
-			threadPool.execute(new Runnable() {
+			Future<?> future = threadPool.submit(new Runnable() {
 
 				@Override
 				public void run() {
@@ -174,6 +175,11 @@ public abstract class AbstractClassBasedEvictionTest {
 					}
 				}
 			});
+			futures.add(future);
+		}
+
+		for (Future<?> future : futures) {
+			Assert.assertNull(future.get());
 		}
 		threadPool.shutdown();
 		threadPool.awaitTermination(60, TimeUnit.SECONDS);
@@ -186,11 +192,12 @@ public abstract class AbstractClassBasedEvictionTest {
 	protected abstract void assertMultiThreadedOperationsTest();
 
 	@Test
-	public void multiThreadedWithTakeOperationsTest() throws InterruptedException {
+	public void multiThreadedWithTakeOperationsTest() throws InterruptedException, ExecutionException {
 		logger.info("fill the space with entries");		
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
+		List<Future<?>> futures = new ArrayList<Future<?>>();
 		for (int i = 0; i < NUM_OF_THREADS; i++) {
-			threadPool.execute(new Runnable() {
+			Future<?> future = threadPool.submit(new Runnable() {
 
 				@Override
 				public void run() {
@@ -220,6 +227,10 @@ public abstract class AbstractClassBasedEvictionTest {
 					}catch(SpaceMemoryShortageException e){}
 				}
 			});
+			futures.add(future);
+		}
+		for (Future<?> future : futures) {
+			Assert.assertNull(future.get());
 		}
 		threadPool.shutdown();
 		threadPool.awaitTermination(1, TimeUnit.MINUTES);
@@ -242,13 +253,14 @@ public abstract class AbstractClassBasedEvictionTest {
 	}
 
 	@Test
-	public void loadTest() throws InterruptedException {
+	public void loadTest() throws InterruptedException, ExecutionException {
 		final AtomicInteger id = new AtomicInteger(0);
 		final long start = System.currentTimeMillis();
 		final int minutes = 1;
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
+		List<Future<?>> futures = new ArrayList<Future<?>>();
 		for (int i = 0; i < NUM_OF_THREADS; i++) {
-			threadPool.execute(new Runnable() {
+			Future<?> future = threadPool.submit(new Runnable() {
 
 				@Override
 				public void run() {
@@ -268,6 +280,10 @@ public abstract class AbstractClassBasedEvictionTest {
 					}
 				}
 			});
+			futures.add(future);
+		}
+		for (Future<?> future : futures) {
+			Assert.assertNull(future.get());
 		}
 		threadPool.shutdown();
 		threadPool.awaitTermination(minutes, TimeUnit.MINUTES);
@@ -276,14 +292,15 @@ public abstract class AbstractClassBasedEvictionTest {
 	}
 
 	@Test
-	public void loadMultiOperationsTest() throws InterruptedException {
+	public void loadMultiOperationsTest() throws InterruptedException, ExecutionException {
 		logger.info("fill the space with entries");		
 		final AtomicInteger id = new AtomicInteger(0);
 		final long start = System.currentTimeMillis();
 		final int minutes = 1;
 		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
+		List<Future<?>> futures = new ArrayList<Future<?>>();
 		for (int i = 0; i < NUM_OF_THREADS; i++) {
-			threadPool.execute(new Runnable() {
+			Future<?> future = threadPool.submit(new Runnable() {
 				@Override
 				public void run() {
 					while(System.currentTimeMillis() - start < TimeUnit.MINUTES.toMillis(minutes)){
@@ -317,6 +334,10 @@ public abstract class AbstractClassBasedEvictionTest {
 					}
 				}
 			});
+			futures.add(future);
+		}
+		for (Future<?> future : futures) {
+			Assert.assertNull(future.get());
 		}
 		threadPool.shutdown();
 		threadPool.awaitTermination(minutes + 1, TimeUnit.MINUTES);

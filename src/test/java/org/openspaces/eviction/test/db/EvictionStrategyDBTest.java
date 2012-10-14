@@ -2,9 +2,10 @@ package org.openspaces.eviction.test.db;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -68,48 +69,50 @@ public class EvictionStrategyDBTest {
 	}
 
 	@Test
-	public void multiThreadedMultiOperationsDBTest() throws InterruptedException {
+	public void multiThreadedMultiOperationsDBTest() throws InterruptedException, ExecutionException {
 		logger.info("fill the space with entries");		
 		for (int i = 0; i < CACHE_MAX_SIZE + 1; i++) {
 			gigaSpace.write(new DataEntryPriorityA(i));
 			gigaSpace.write(new DataEntryPriorityB(i));
 			gigaSpace.write(new DataEntryPriorityC(i));
 		}
-		ScheduledExecutorService threadPool = Executors.newScheduledThreadPool(NUM_OF_THREADS);
-		List<ScheduledFuture<?>> futuresList = new ArrayList<ScheduledFuture<?>>();
+		final long start = System.currentTimeMillis();
+		ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREADS);
+		List<Future<?>> futuresList = new ArrayList<Future<?>>();
 		for (int i = 0; i < NUM_OF_THREADS; i++) {
-			ScheduledFuture<?> scheduleWithFixedDelay = threadPool.scheduleWithFixedDelay(new Runnable() {
+			Future<?> future = threadPool.submit(new Runnable() {
 
 				@Override
 				public void run(){
-					int i = (int)(Math.random() * ENTRY_NUM);
-					switch(i % 3){
-					case 0:
-						gigaSpace.write(new DataEntryPriorityA(i));
-						gigaSpace.read(new DataEntryPriorityC(i));
-						if(Math.random() < 0.5)
-							gigaSpace.take(new DataEntryPriorityB(i));
-						break;
-					case 1:
-						gigaSpace.write(new DataEntryPriorityB(i));
-						gigaSpace.read(new DataEntryPriorityA(i));
-						if(Math.random() < 0.5)
-							gigaSpace.take(new DataEntryPriorityC(i));
-						break;
-					case 2:
-						gigaSpace.write(new DataEntryPriorityC(i));
-						gigaSpace.read(new DataEntryPriorityB(i));
-						if(Math.random() < 0.5)
-							gigaSpace.take(new DataEntryPriorityA(i));
-						break;
+					while (System.currentTimeMillis() - start < TimeUnit.MINUTES.toMillis(RUNNING_TIME)) {
+						int i = (int) (Math.random() * ENTRY_NUM);
+						switch (i % 3) {
+						case 0:
+							gigaSpace.write(new DataEntryPriorityA(i));
+							gigaSpace.read(new DataEntryPriorityC(i));
+							if (Math.random() < 0.5)
+								gigaSpace.take(new DataEntryPriorityB(i));
+							break;
+						case 1:
+							gigaSpace.write(new DataEntryPriorityB(i));
+							gigaSpace.read(new DataEntryPriorityA(i));
+							if (Math.random() < 0.5)
+								gigaSpace.take(new DataEntryPriorityC(i));
+							break;
+						case 2:
+							gigaSpace.write(new DataEntryPriorityC(i));
+							gigaSpace.read(new DataEntryPriorityB(i));
+							if (Math.random() < 0.5)
+								gigaSpace.take(new DataEntryPriorityA(i));
+							break;
+						}
 					}
 				}
-			}, 0, 1, TimeUnit.NANOSECONDS);
-			futuresList.add(scheduleWithFixedDelay);
+			});
+			futuresList.add(future);
 		}
-		TimeUnit.MINUTES.sleep(RUNNING_TIME);
-		for (ScheduledFuture<?> scheduledFuture : futuresList) {
-			Assert.assertTrue(scheduledFuture.cancel(true));
+		for (Future<?> future : futuresList) {
+			Assert.assertNull(future.get());
 		}
 
 		logger.info("Test Passed");
