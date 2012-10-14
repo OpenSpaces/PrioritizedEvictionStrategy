@@ -19,6 +19,7 @@ package org.openspaces.eviction.test.data;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
@@ -30,6 +31,7 @@ public class Medal {
 	Integer id;
 	String winnerName;
 	double diameter;
+	@Transient
 	Object weight;
 	String sport;
 	String contest;
