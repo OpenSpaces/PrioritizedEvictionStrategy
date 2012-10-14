@@ -349,7 +349,7 @@ public abstract class AbstractClassBasedEvictionTest {
 								toWrite = new SilverMedal(id.incrementAndGet());
 							else
 								toWrite = new BronzeMedal(id.incrementAndGet());
-							toWrite.setWeight(new byte[weight]);
+							//toWrite.setWeight(new byte[weight]);
 							gigaSpace.write(toWrite);
 						}
 						catch(SpaceMemoryShortageException e){
