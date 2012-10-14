@@ -58,7 +58,7 @@ public class EvictionStrategyDBTest {
 	}
 
 	@Test
-	public void noneEvictionTest(){
+	public void noneEvictionDBTest(){
 		logger.info("started none eviction db test");		
 		for (int i = 0; i < CACHE_MAX_SIZE + 1; i++) {
 			gigaSpace.write(new DataEntryPriorityA(i));
@@ -68,7 +68,7 @@ public class EvictionStrategyDBTest {
 	}
 
 	@Test
-	public void multiThreadedMultiOperationsTest() throws InterruptedException {
+	public void multiThreadedMultiOperationsDBTest() throws InterruptedException {
 		logger.info("fill the space with entries");		
 		for (int i = 0; i < CACHE_MAX_SIZE + 1; i++) {
 			gigaSpace.write(new DataEntryPriorityA(i));
