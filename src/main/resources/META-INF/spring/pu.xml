@@ -22,7 +22,7 @@
 	<os-core:giga-space-context />
 
 
-	<os-core:space id="space" url="/./mySpace?groups=myGroup">
+	<os-core:space id="space" url="/./mySpace" lookup-groups="myGroup">
 		<os-core:custom-cache-policy size="1000" initial-load-percentage="20"
 			space-eviction-strategy="classSpecificEvictionStrategy"/>
 	</os-core:space>
