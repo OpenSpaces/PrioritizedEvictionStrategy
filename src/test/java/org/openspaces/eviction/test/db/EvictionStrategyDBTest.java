@@ -104,12 +104,12 @@ public class EvictionStrategyDBTest {
 						break;
 					}
 				}
-			}, 0, 10, TimeUnit.MILLISECONDS);
+			}, 0, 1, TimeUnit.NANOSECONDS);
 			futuresList.add(scheduleWithFixedDelay);
 		}
 		TimeUnit.MINUTES.sleep(RUNNING_TIME);
 		for (ScheduledFuture<?> scheduledFuture : futuresList) {
-			Assert.assertTrue(scheduledFuture.cancel(false));
+			Assert.assertTrue(scheduledFuture.cancel(true));
 		}
 
 		logger.info("Test Passed");
