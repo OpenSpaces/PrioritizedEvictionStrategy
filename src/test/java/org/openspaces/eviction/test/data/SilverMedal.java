@@ -15,17 +15,17 @@
  * limitations under the License.
  *******************************************************************************/
 
-package org.openspaces.eviction.data;
+package org.openspaces.eviction.test.data;
 
 import org.openspaces.eviction.OrderBy;
 import org.openspaces.eviction.SpaceEvictionPriority;
 
-@SpaceEvictionPriority(priority = 2, orderBy = OrderBy.FIFO)
-public class BronzeMedal extends Medal {
+@SpaceEvictionPriority(priority = 1, orderBy = OrderBy.LRU)
+public class SilverMedal extends Medal {
 	
-	public BronzeMedal(){}
+	public SilverMedal(){}
 	
-	public BronzeMedal(int id){
+	public SilverMedal(int id){
 		super(id);
 	}
 }

@@ -15,7 +15,7 @@
  * limitations under the License.
  *******************************************************************************/
 
-package org.openspaces.eviction.data;
+package org.openspaces.eviction.test.data;
 
 import org.openspaces.eviction.OrderBy;
 import org.openspaces.eviction.SpaceEvictionPriority;

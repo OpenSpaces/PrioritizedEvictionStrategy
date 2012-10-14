@@ -23,8 +23,8 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openspaces.eviction.data.GoldMedal;
-import org.openspaces.eviction.data.SilverMedal;
+import org.openspaces.eviction.test.data.GoldMedal;
+import org.openspaces.eviction.test.data.SilverMedal;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;

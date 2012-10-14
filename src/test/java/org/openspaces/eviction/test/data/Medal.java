@@ -15,13 +15,18 @@
  * limitations under the License.
  *******************************************************************************/
 
-package org.openspaces.eviction.data;
+package org.openspaces.eviction.test.data;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
 
+@Entity
 @SpaceClass
 public class Medal {
+	@Id
 	Integer id;
 	String winnerName;
 	double diameter;

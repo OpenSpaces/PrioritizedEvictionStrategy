@@ -19,10 +19,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openspaces.core.GigaSpace;
 import org.openspaces.core.SpaceMemoryShortageException;
-import org.openspaces.eviction.data.BronzeMedal;
-import org.openspaces.eviction.data.GoldMedal;
-import org.openspaces.eviction.data.Medal;
-import org.openspaces.eviction.data.SilverMedal;
+import org.openspaces.eviction.test.data.BronzeMedal;
+import org.openspaces.eviction.test.data.GoldMedal;
+import org.openspaces.eviction.test.data.Medal;
+import org.openspaces.eviction.test.data.SilverMedal;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractClassBasedEvictionTest {
