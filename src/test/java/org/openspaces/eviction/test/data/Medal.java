@@ -17,6 +17,7 @@
 
 package org.openspaces.eviction.test.data;
 
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
@@ -31,7 +32,6 @@ public class Medal {
 	Integer id;
 	String winnerName;
 	double diameter;
-	@OneToOne
 	Payload weight;
 	String sport;
 	String contest;
@@ -77,6 +77,8 @@ public class Medal {
 		return weight;
 	}
 
+	@OneToOne
+	@Embedded
 	public void setWeight(Payload weight) {
 		this.weight = weight;
 	}
