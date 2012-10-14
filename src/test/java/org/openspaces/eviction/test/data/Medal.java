@@ -17,20 +17,18 @@
 
 package org.openspaces.eviction.test.data;
 
-import javax.persistence.Entity;
 import javax.persistence.Id;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
 
-@Entity
 @SpaceClass
 public class Medal {
 	@Id
 	Integer id;
 	String winnerName;
 	double diameter;
-//	Payload weight;
+	Payload weight;
 	String sport;
 	String contest;
 	
@@ -70,15 +68,14 @@ public class Medal {
 		this.diameter = diameter;
 	}
 
-	/*@OneToOne
-	@Embedded
+
 	public Payload getWeight() {
 		return weight;
 	}
 
 	public void setWeight(Payload weight) {
 		this.weight = weight;
-	}*/
+	}
 
 	public String getSport() {
 		return sport;
