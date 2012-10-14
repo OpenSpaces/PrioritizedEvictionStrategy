@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:os-core="http://www.openspaces.org/schema/core" xmlns:os-events="http://www.openspaces.org/schema/events"
+	xmlns:os-remoting="http://www.openspaces.org/schema/remoting"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+       http://www.openspaces.org/schema/core http://www.openspaces.org/schema/9.1/core/openspaces-core.xsd
+       http://www.openspaces.org/schema/events http://www.openspaces.org/schema/9.1/events/openspaces-events.xsd
+       http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/9.1/remoting/openspaces-remoting.xsd">
+	<!-- Spring propery configurer which allows us to use system properties 
+		(such as user.name). -->
+	<bean id="propertiesConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
+
+	<context:annotation-config />
+
+	<!-- Scan for components (both Spring ones and OpenSpaces ones) -->
+	<context:component-scan base-package="org.openspaces.evcition" />
+
+	<!-- Enables the usage of @GigaSpaceContext annotation based injection. -->
+	<os-core:giga-space-context />
+
+	<os-core:space id="space" url="/./mySpace?groups=EvictionStrategyTest"
+		schema="persistent" mirror="true" external-data-source="hibernateDataSource">
+		<os-core:custom-cache-policy size="5" initial-load-percentage="20"
+			space-eviction-strategy="classBasedEvictionLRUStrategy"/>
+		<os-core:properties>
+			<props>
+				<prop key="com.gs.cluster.cache-loader.external-data-source">true</prop>
+		        <prop key="com.gs.cluster.cache-loader.central-data-source">true</prop>
+		        <prop key="space-config.external-data-source.usage">read-write</prop>
+			</props>
+		</os-core:properties>
+	</os-core:space>
+
+	<!-- OpenSpaces simplified space API built on top of IJSpace/JavaSpace. -->
+
+	<os-core:giga-space id="gigaSpace" space="space" />
+
+	<bean id="classBasedEvictionLRUStrategy" 
+		class="org.openspaces.eviction.singleorder.ClassBasedEvictionLRUStrategy"/>
+	
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+     	<property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+     	<property name="url" value="jdbc:mysql://127.0.0.1:3306/EvictionStrategyTest"/>
+    	<property name="username" value="root"/>
+     	<property name="password" value=""/>
+        <property name="maxActive" value="100"/>
+        <property name="initialSize" value="10"/>
+    	</bean>
+
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+	    <property name="dataSource" ref="dataSource"/>
+	    <property name="annotatedClasses">
+            <list>
+                <value>org.openspaces.eviction.test.data.Medal</value>
+            </list>
+        </property>
+	    <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+                <prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
+                <prop key="hibernate.cache.use_second_level_cache">false</prop>
+                <prop key="hibernate.cache.use_query_cache">false</prop>
+                <prop key="hibernate.hbm2ddl.auto">update</prop>
+            </props>
+        </property>
+	</bean>
+		
+		
+</beans>
