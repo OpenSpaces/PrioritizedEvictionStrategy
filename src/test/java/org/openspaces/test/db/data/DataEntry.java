@@ -5,13 +5,9 @@ import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import org.openspaces.eviction.OrderBy;
-import org.openspaces.eviction.SpaceEvictionPriority;
-
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
 
-@SpaceEvictionPriority(priority = 0, orderBy = OrderBy.LRU)
 @SpaceClass
 @Entity
 public class DataEntry implements Serializable{

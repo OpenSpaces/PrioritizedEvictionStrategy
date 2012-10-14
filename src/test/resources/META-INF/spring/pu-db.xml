@@ -59,7 +59,11 @@
 	    <property name="dataSource" ref="dataSource"/>
 	    <property name="annotatedClasses">
             <list>
-                <value>org.openspaces.test.db.data.DataEntry</value>
+                <value>org.openspaces.eviction.test.data.Medal</value>
+                <value>org.openspaces.eviction.test.data.BronzeMedal</value>
+                <value>org.openspaces.eviction.test.data.SilverMedal</value>
+                <value>org.openspaces.eviction.test.data.GoldMedal</value>
+                <value>org.openspaces.eviction.test.data.Payload</value>
             </list>
         </property>
 	    <property name="hibernateProperties">

@@ -14,7 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openspaces.core.GigaSpace;
-import org.openspaces.test.db.data.DataEntry;
+import org.openspaces.eviction.test.data.BronzeMedal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -46,12 +46,13 @@ public class EvictionStrategyDBTest {
 	
 	@Test
 	public void readFromDBTest(){
-		logger.info("started test");		
+		logger.info("started simple db test");		
 		for (int i = 0; i < CACHE_MAX_SIZE + 1; i++) {
-			gigaSpace.write(new DataEntry(i));
+			gigaSpace.write(new BronzeMedal(i));
 		}
-		Assert.assertEquals(CACHE_MAX_SIZE, gigaSpace.count(new DataEntry()));
-		Assert.assertNotNull(gigaSpace.read(new DataEntry(0)));
+		Assert.assertEquals(CACHE_MAX_SIZE, gigaSpace.count(new BronzeMedal()));
+		Assert.assertNotNull(gigaSpace.read(new BronzeMedal(0)));
+		logger.info("simple db test passed");		
 	}
 
 	//@Test
