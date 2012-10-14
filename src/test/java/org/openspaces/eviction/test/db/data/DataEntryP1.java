@@ -1,4 +1,4 @@
-package org.openspaces.test.db.data;
+package org.openspaces.eviction.test.db.data;
 
 import java.io.Serializable;
 

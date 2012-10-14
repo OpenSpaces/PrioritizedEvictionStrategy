@@ -1,4 +1,4 @@
-package org.openspaces.test.db.data;
+package org.openspaces.eviction.test.db.data;
 
 import java.io.Serializable;
 
@@ -10,24 +10,24 @@ import org.openspaces.eviction.SpaceEvictionPriority;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
-@SpaceEvictionPriority(priority = 0, orderBy = OrderBy.NONE)
+@SpaceEvictionPriority(priority = 2, orderBy = OrderBy.FIFO)
 @SpaceClass
 @Entity
-public class DataEntryP0 implements Serializable{
-	private static final long serialVersionUID = 7584368569212146521L;
+public class DataEntryP2 implements Serializable{
+	private static final long serialVersionUID = 943615943974723455L;
 
 	@Id
 	private Integer id;
 	private	String payload;
 	
-	public DataEntryP0(){}
+	public DataEntryP2(){}
 	
-	public DataEntryP0(Integer id) {
+	public DataEntryP2(Integer id) {
 		super();
 		this.id = id;
 	}
 
-	public DataEntryP0(Integer id, String payload) {
+	public DataEntryP2(Integer id, String payload) {
 		super();
 		this.id = id;
 		this.payload = payload;

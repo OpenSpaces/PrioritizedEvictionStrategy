@@ -1,4 +1,4 @@
-package org.openspaces.test.db;
+package org.openspaces.eviction.test.db;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openspaces.core.GigaSpace;
-import org.openspaces.test.db.data.DataEntryP1;
+import org.openspaces.eviction.test.db.data.DataEntryP1;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
