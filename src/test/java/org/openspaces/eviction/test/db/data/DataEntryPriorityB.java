@@ -10,24 +10,24 @@ import org.openspaces.eviction.SpaceEvictionPriority;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
-@SpaceEvictionPriority(priority = 2, orderBy = OrderBy.FIFO)
+@SpaceEvictionPriority(priority = 1, orderBy = OrderBy.LRU)
 @SpaceClass
 @Entity
-public class DataEntryP2 implements Serializable{
-	private static final long serialVersionUID = 943615943974723455L;
+public class DataEntryPriorityB implements Serializable{
+	private static final long serialVersionUID = 201202881609366340L;
 
 	@Id
 	private Integer id;
 	private	String payload;
 	
-	public DataEntryP2(){}
+	public DataEntryPriorityB(){}
 	
-	public DataEntryP2(Integer id) {
+	public DataEntryPriorityB(Integer id) {
 		super();
 		this.id = id;
 	}
 
-	public DataEntryP2(Integer id, String payload) {
+	public DataEntryPriorityB(Integer id, String payload) {
 		super();
 		this.id = id;
 		this.payload = payload;

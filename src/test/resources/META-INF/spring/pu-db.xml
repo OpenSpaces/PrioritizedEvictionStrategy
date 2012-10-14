@@ -24,7 +24,7 @@
 	<os-core:space id="space" url="/./mySpace" schema="persistent" lookup-groups="EvictionStrategyTest"
 		mirror="true" external-data-source="hibernateDataSource">
 		<os-core:custom-cache-policy size="5" initial-load-percentage="20"
-			space-eviction-strategy="classBasedEvictionLRUStrategy"/>
+			space-eviction-strategy="classSpecificEvictionStrategy"/>
 		<os-core:properties>
 			<props>
 				<prop key="com.gs.cluster.cache-loader.external-data-source">true</prop>
@@ -38,8 +38,8 @@
 
 	<os-core:giga-space id="gigaSpace" space="space" />
 
-	<bean id="classBasedEvictionLRUStrategy" 
-		class="org.openspaces.eviction.singleorder.ClassBasedEvictionLRUStrategy"/>
+	<bean id="classSpecificEvictionStrategy" 
+		class="org.openspaces.eviction.singleorder.ClassSpecificEvictionStrategy"/>
 	
 	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
      	<property name="driverClassName" value="com.mysql.jdbc.Driver"/>

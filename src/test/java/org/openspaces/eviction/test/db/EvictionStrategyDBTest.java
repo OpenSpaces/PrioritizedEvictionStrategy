@@ -14,7 +14,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openspaces.core.GigaSpace;
-import org.openspaces.eviction.test.db.data.DataEntryP1;
+import org.openspaces.eviction.test.db.data.DataEntryPriorityA;
+import org.openspaces.eviction.test.db.data.DataEntryPriorityB;
+import org.openspaces.eviction.test.db.data.DataEntryPriorityC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -48,14 +50,24 @@ public class EvictionStrategyDBTest {
 	public void readFromDBTest(){
 		logger.info("started simple db test");		
 		for (int i = 0; i < CACHE_MAX_SIZE + 1; i++) {
-			gigaSpace.write(new DataEntryP1(i));
+			gigaSpace.write(new DataEntryPriorityB(i));
 		}
-		Assert.assertEquals(CACHE_MAX_SIZE, gigaSpace.count(new DataEntryP1()));
-		Assert.assertNotNull(gigaSpace.read(new DataEntryP1(0)));
+		Assert.assertEquals(CACHE_MAX_SIZE, gigaSpace.count(new DataEntryPriorityB()));
+		Assert.assertNotNull(gigaSpace.read(new DataEntryPriorityB(0)));
 		logger.info("simple db test passed");		
 	}
 
-	//@Test
+	@Test
+	public void noneEvictionTest(){
+		logger.info("started none eviction db test");		
+		for (int i = 0; i < CACHE_MAX_SIZE + 1; i++) {
+			gigaSpace.write(new DataEntryPriorityA(i));
+		}
+		Assert.assertEquals(CACHE_MAX_SIZE + 1, gigaSpace.count(new DataEntryPriorityA()));
+		logger.info("none eviction db test passed");		
+	}
+
+	@Test
 	public void multiThreadedMultiOperationsTest() throws InterruptedException {
 		logger.info("fill the space with entries");		
 		ScheduledExecutorService threadPool = Executors.newScheduledThreadPool(NUM_OF_THREADS);
@@ -65,28 +77,29 @@ public class EvictionStrategyDBTest {
 
 				@Override
 				public void run(){
-					/*switch(i % 3){
+					int i = ((int)Math.random() * ENTRY_NUM);
+					switch(i % 3){
 					case 0:
-						gigaSpace.write(new GoldMedal(i));
-						gigaSpace.read(new BronzeMedal());
+						gigaSpace.write(new DataEntryPriorityA(i));
+						gigaSpace.read(new DataEntryPriorityC());
 						if(Math.random() < 0.5)
-							gigaSpace.take(new SilverMedal());
+							gigaSpace.take(new DataEntryPriorityB());
 						break;
 					case 1:
-						gigaSpace.write(new SilverMedal(i));
-						gigaSpace.read(new GoldMedal());
+						gigaSpace.write(new DataEntryPriorityB(i));
+						gigaSpace.read(new DataEntryPriorityA());
 						if(Math.random() < 0.5)
-							gigaSpace.take(new BronzeMedal());
+							gigaSpace.take(new DataEntryPriorityC());
 						break;
 					case 2:
-						gigaSpace.write(new BronzeMedal(i));
-						gigaSpace.read(new SilverMedal());
+						gigaSpace.write(new DataEntryPriorityC(i));
+						gigaSpace.read(new DataEntryPriorityB());
 						if(Math.random() < 0.5)
-							gigaSpace.take(new GoldMedal());
+							gigaSpace.take(new DataEntryPriorityA());
 						break;
-				}*/
 				}
-			}, 0, 100, TimeUnit.MILLISECONDS);
+				}
+			}, 0, 10, TimeUnit.MILLISECONDS);
 			futuresList.add(scheduleWithFixedDelay);
 		}
 		TimeUnit.MINUTES.sleep(RUNNING_TIME);

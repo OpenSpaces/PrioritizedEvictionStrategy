@@ -13,21 +13,21 @@ import com.gigaspaces.annotation.pojo.SpaceId;
 @SpaceEvictionPriority(priority = 0, orderBy = OrderBy.NONE)
 @SpaceClass
 @Entity
-public class DataEntryP0 implements Serializable{
+public class DataEntryPriorityA implements Serializable{
 	private static final long serialVersionUID = 7584368569212146521L;
 
 	@Id
 	private Integer id;
 	private	String payload;
 	
-	public DataEntryP0(){}
+	public DataEntryPriorityA(){}
 	
-	public DataEntryP0(Integer id) {
+	public DataEntryPriorityA(Integer id) {
 		super();
 		this.id = id;
 	}
 
-	public DataEntryP0(Integer id, String payload) {
+	public DataEntryPriorityA(Integer id, String payload) {
 		super();
 		this.id = id;
 		this.payload = payload;
