@@ -22,7 +22,6 @@ import org.openspaces.core.SpaceMemoryShortageException;
 import org.openspaces.eviction.test.data.BronzeMedal;
 import org.openspaces.eviction.test.data.GoldMedal;
 import org.openspaces.eviction.test.data.Medal;
-import org.openspaces.eviction.test.data.Payload;
 import org.openspaces.eviction.test.data.SilverMedal;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -350,7 +349,7 @@ public abstract class AbstractClassBasedEvictionTest {
 								toWrite = new SilverMedal(id.incrementAndGet());
 							else
 								toWrite = new BronzeMedal(id.incrementAndGet());
-							toWrite.setWeight(new Payload(i, weight));
+							//toWrite.setWeight(new Payload(i, weight));
 							gigaSpace.write(toWrite);
 						}
 						catch(SpaceMemoryShortageException e){
