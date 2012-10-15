@@ -90,20 +90,14 @@ public class EvictionStrategyDBTest {
 						case 0:
 							gigaSpace.write(new DataEntryPriorityA(i));
 							gigaSpace.read(new DataEntryPriorityC(i));
-							if (Math.random() < 0.5)
-								gigaSpace.take(new DataEntryPriorityB(i));
 							break;
 						case 1:
 							gigaSpace.write(new DataEntryPriorityB(i));
 							gigaSpace.read(new DataEntryPriorityA(i));
-							if (Math.random() < 0.5)
-								gigaSpace.take(new DataEntryPriorityC(i));
 							break;
 						case 2:
 							gigaSpace.write(new DataEntryPriorityC(i));
 							gigaSpace.read(new DataEntryPriorityB(i));
-							if (Math.random() < 0.5)
-								gigaSpace.take(new DataEntryPriorityA(i));
 							break;
 						}
 					}
