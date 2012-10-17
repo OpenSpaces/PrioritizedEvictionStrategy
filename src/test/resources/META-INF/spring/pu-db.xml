@@ -10,7 +10,7 @@
        http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/9.1/remoting/openspaces-remoting.xsd">
 	<!-- Spring propery configurer which allows us to use system properties 
 		(such as user.name). -->
-	<bean id="propertiesConfigurer"
+		<bean id="propertiesConfigurer"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
 
 	<context:annotation-config />
@@ -43,9 +43,9 @@
 	
 	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
      	<property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-     	<property name="url" value="jdbc:mysql://127.0.0.1:3306/EvictionStrategyTest"/>
-    	<property name="username" value="root"/>
-     	<property name="password" value=""/>
+     	<property name="url" value="jdbc:mysql://#{systemProperties['mysql.host']}:#{systemProperties['mysql.port']}/EvictionStrategyTest"/>
+    	<property name="username" value="#{systemProperties['mysql.user']}"/>
+     	<property name="password" value="#{systemProperties['mysql.pass']}"/>
         <property name="maxActive" value="100"/>
         <property name="initialSize" value="10"/>
     	</bean>

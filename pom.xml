@@ -11,6 +11,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<gsVersion>9.1.0-SNAPSHOT</gsVersion>
 		<springVersion>3.1.2.RELEASE</springVersion>
+		<!--change these properties for the DB test or un-comment the excludedGroups tag to skip it-->
+		<mysql.host>127.0.0.1</mysql.host>
+		<mysql.port>3306</mysql.port>
+		<mysql.user>root</mysql.user>
+		<mysql.pass></mysql.pass>
 	</properties>
 
 	<repositories>
@@ -33,7 +38,7 @@
 			<version>${gsVersion}</version>
 			<scope>provided</scope>
 		</dependency>
-		<!--These Dependencies are needed only for the tests-->
+		<!--These Dependencies are needed only for the tests -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -52,7 +57,7 @@
 			<version>${springVersion}</version>
 			<scope>test</scope>
 		</dependency>
-		<!--These Dependencies are needed only for theDB  test-->
+		<!--These Dependencies are needed only for theDB test -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-orm</artifactId>
@@ -93,13 +98,25 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
 				<version>2.3.2</version>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.12.4</version>
+				<configuration>
+					<systemProperties>
+						<mysql.host>${mysql.host}</mysql.host>
+						<mysql.port>${mysql.port}</mysql.port>
+						<mysql.user>${mysql.user}</mysql.user>
+						<mysql.pass>${mysql.pass}</mysql.pass>
+					</systemProperties>
+					<!-- <excludedGroups>org.openspaces.eviction.test.db.EvictionStrategyDBTest</excludedGroups> -->
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -13,6 +13,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.openspaces.core.GigaSpace;
 import org.openspaces.eviction.test.db.data.DataEntryPriorityA;
@@ -27,6 +28,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:META-INF/spring/pu-db.xml"})
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS)
+@Category(org.openspaces.eviction.test.db.EvictionStrategyDBTest.class)
 public class EvictionStrategyDBTest {
 	protected static final int NUM_OF_THREADS = 30;
 	protected static final int ENTRY_NUM = 20;
@@ -38,7 +40,6 @@ public class EvictionStrategyDBTest {
 
 	@BeforeClass
 	public static  void callGC() {
-
 		System.gc();
 	}
 
@@ -49,7 +50,7 @@ public class EvictionStrategyDBTest {
 
 	@Test
 	public void readFromDBTest(){
-		logger.info("started simple db test");		
+		logger.info("started simple db test");
 		for (int i = 0; i < CACHE_MAX_SIZE + 1; i++) {
 			gigaSpace.write(new DataEntryPriorityB(i));
 		}
