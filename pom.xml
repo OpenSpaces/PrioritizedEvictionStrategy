@@ -9,7 +9,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<gsVersion>9.1.0-SNAPSHOT</gsVersion>
+		<gsVersion>9.1.0-RELEASE</gsVersion>
 		<springVersion>3.1.2.RELEASE</springVersion>
 		<!--change these properties for the DB test or un-comment the excludedGroups tag to skip it-->
 		<mysql.host>127.0.0.1</mysql.host>
@@ -57,7 +57,7 @@
 			<version>${springVersion}</version>
 			<scope>test</scope>
 		</dependency>
-		<!--These Dependencies are needed only for theDB test -->
+		<!--These Dependencies are needed only for the DB test -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-orm</artifactId>
@@ -99,11 +99,11 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>				
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
-				<version>2.3.2</version>
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
